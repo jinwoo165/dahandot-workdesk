@@ -62,3 +62,58 @@ body{color:var(--text);background:var(--bg)}a,.text-btn{color:var(--green)}.pane
 @media(max-width:430px){.topbar-actions{gap:5px}.topbar .shortcut{min-width:26px}.topbar .brand-icon{width:23px;height:23px}.topbar .source-status-button{padding-inline:6px;gap:5px}.topbar .source-status-button span{font-size:9px}.title-row{padding-inline:9px}.title-row h1{font-size:17px}.title-row .actions .btn{padding-inline:7px}.today-label{font-size:8px!important}.theme-toggle{padding-inline:5px}.topbar .report-shortcut{font-size:9px}}
 @media(max-height:740px) and (min-width:901px){.scenic-banner{height:58px}.title-row{min-height:58px}.title-row .eyebrow{display:none}}
 @media(max-height:740px) and (max-width:900px){.title-row{height:50px;min-height:50px!important}.source-row{min-height:35px}.source-detail p{font-size:10px}}
+
+/* v2.5: the daily overview stays visible above three equally important work areas. */
+.dashboard-grid{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr) minmax(0,1.08fr);grid-template-rows:auto minmax(0,1fr);gap:14px}
+.dashboard-overview{grid-column:1/3;grid-row:1;display:flex;flex-direction:column;gap:10px;min-width:0}
+.briefing.briefing-expanded{height:auto;min-height:0;flex:1 0 auto;padding:15px 18px;align-items:flex-start}
+.briefing-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.briefing-heading small{font-size:9px;color:var(--muted);font-weight:400}
+.briefing-expanded ul{padding:0;margin:8px 0 0;list-style:none;display:grid;gap:5px}
+.briefing-expanded li{position:relative;padding-left:12px;font-size:12px;line-height:1.6;overflow-wrap:anywhere}
+.briefing-expanded li:before{content:'·';position:absolute;left:0;color:var(--accent);font-weight:700}
+.dashboard-overview .stats{flex:0 0 56px;height:56px}
+.dashboard-overview .stat{padding:10px 14px}
+.dashboard-grid>.weather-panel{grid-column:3;grid-row:1;height:auto;min-height:175px;align-self:stretch;display:flex;flex-direction:column;justify-content:space-between}
+.dashboard-work{grid-column:1;grid-row:2}
+.dashboard-agenda{grid-column:2;grid-row:2;min-height:0;min-width:0;display:flex}
+.dashboard-files{grid-column:3;grid-row:2;min-height:0;min-width:0;display:flex}
+.dashboard-tabs{display:none}
+.dashboard-grid .filters{display:grid;grid-template-columns:1fr 1fr;padding:9px 12px}
+.dashboard-grid .filters input{grid-column:1/-1;width:100%;min-width:0}
+.dashboard-grid .filters select{width:100%;min-width:0;max-width:none;font-size:10px}
+.dashboard-grid .panel-head{padding:13px 14px}
+.dashboard-grid .panel-head h2{font-size:14px}
+.dashboard-grid .panel-head small{font-size:10px}
+.file-card{position:relative;border-bottom:1px solid var(--line);padding-bottom:24px}
+.file-card .file-entry{border:0;padding:12px 14px 4px;gap:9px}
+.file-card>.text-btn{position:absolute;right:12px;bottom:5px;font-size:10px;padding:2px 0}
+.file-summary{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;color:var(--text);font-size:11px;line-height:1.65;margin-top:6px;overflow-wrap:anywhere}
+.file-summary em{font-size:9px;font-style:normal;font-weight:600;color:var(--accent);margin-right:5px}
+.summary-pending{color:var(--muted);font-size:10px}
+.file-info{flex:1}
+.dashboard-files .file-info strong{-webkit-line-clamp:2;line-height:1.5}
+.dashboard-grid .agenda-item{padding:13px 14px}
+.dashboard-grid .agenda-item strong{font-size:13px}
+.dashboard-grid .file-check{font-size:9px;padding-inline:12px}
+.update-notice{padding:7px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+@media(min-width:1600px){.dashboard-grid{gap:18px}.dashboard-grid .panel-head{padding:16px 18px}.briefing-expanded li{font-size:13px}.file-summary{font-size:12px}.dashboard-grid .file-entry{padding:14px 18px 4px}}
+@media(min-width:901px) and (max-width:1150px){.dashboard-grid{grid-template-columns:1fr 280px;grid-template-rows:auto 36px minmax(0,1fr)}.dashboard-overview{grid-column:1;grid-row:1}.dashboard-grid>.weather-panel{grid-column:2;grid-row:1}.dashboard-tabs{grid-column:1/-1;grid-row:2;display:flex}.dashboard-grid #viewBody,.dashboard-agenda,.dashboard-files{grid-column:1/-1;grid-row:3}.dashboard-grid[data-mobile-panel=work]>.dashboard-agenda,.dashboard-grid[data-mobile-panel=work]>.dashboard-files,.dashboard-grid[data-mobile-panel=agenda]>#viewBody,.dashboard-grid[data-mobile-panel=agenda]>.dashboard-files,.dashboard-grid[data-mobile-panel=files]>#viewBody,.dashboard-grid[data-mobile-panel=files]>.dashboard-agenda{display:none}}
+.dashboard-tabs{border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:3px;gap:4px}
+.dashboard-tabs button{flex:1;border:0;background:transparent;color:var(--muted);border-radius:5px;font-size:11px;padding:5px}
+.dashboard-tabs button[aria-pressed=true]{background:var(--soft);color:var(--accent);font-weight:700}
+@media(max-width:900px){
+ .dashboard-grid{display:flex;overflow:auto;overscroll-behavior:contain;gap:10px;padding-bottom:4px}
+ .dashboard-overview{order:1;display:flex;flex:none;gap:8px;width:100%}
+ .dashboard-grid>.weather-panel{order:0;flex:0 0 116px;min-height:116px;height:116px;display:block}
+ .briefing.briefing-expanded{padding:12px;min-height:0;flex:none;order:0}
+ .briefing-expanded li{font-size:11px;line-height:1.65}
+ .briefing-heading small{font-size:8px}
+ .dashboard-overview .stats{order:1;flex:0 0 43px;height:43px}
+ .dashboard-overview .stat{padding:7px 9px}
+ .dashboard-tabs{display:flex;order:2;flex:0 0 36px;min-height:36px;position:sticky;top:0;z-index:1}
+ .dashboard-grid #viewBody,.dashboard-agenda,.dashboard-files{order:3;flex:1 0 350px;min-height:350px;width:100%}
+ .dashboard-grid[data-mobile-panel=work]>.dashboard-agenda,.dashboard-grid[data-mobile-panel=work]>.dashboard-files,.dashboard-grid[data-mobile-panel=agenda]>#viewBody,.dashboard-grid[data-mobile-panel=agenda]>.dashboard-files,.dashboard-grid[data-mobile-panel=files]>#viewBody,.dashboard-grid[data-mobile-panel=files]>.dashboard-agenda{display:none}
+ .dashboard-grid .filters{display:flex;flex-wrap:nowrap}.dashboard-grid .filters input{flex:1;min-width:60px}.dashboard-grid .filters select{width:75px;flex:0 0 75px;font-size:9px}
+}
+@media(max-height:740px) and (min-width:1151px){.dashboard-grid{gap:10px}.briefing.briefing-expanded{padding:10px 14px}.briefing-expanded ul{gap:3px;margin-top:5px}.briefing-expanded li{font-size:11px}.dashboard-overview .stats{flex-basis:45px;height:45px}.dashboard-grid>.weather-panel{min-height:160px}}
