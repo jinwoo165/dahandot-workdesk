@@ -19,3 +19,9 @@ export function matchesTask(t,view,q='',today=day()){
 export function eventOnDay(e,d){const start=day(e.start_at),end=day(e.end_at);return !e.excluded&&e.status!=='cancelled'&&start<=d&&(e.all_day?d<end:d<=end);}
 export function validateTask(p){if(!p.title?.trim())throw Error('업무명을 입력하세요.');if(p.status==='partial'&&!p.remaining_action?.trim())throw Error('부분 완료인 업무에는 남은 일을 적어주세요.');if(p.status==='done'&&(p.remaining_action?.trim()||p.next_review_on))throw Error('남은 일이나 다음 확인일이 있으면 ‘부분 완료’를 선택하세요. 전체 완료라면 두 항목을 비워주세요.');return p;}
 export function briefingEligible(t){return !t.archived&&t.status!=='done';}
+export function currentBriefing(tasks,events,today=day()){
+ const work=tasks.filter(t=>needsAttention(t,today)).sort((a,b)=>(a.next_review_on||a.due_date||today).localeCompare(b.next_review_on||b.due_date||today)).slice(0,3);
+ const upcoming=events.filter(e=>!e.excluded&&e.status!=='cancelled'&&day(e.start_at)<=addDays(today,2)&&(e.all_day?day(e.end_at)>today:day(e.end_at)>=today)).sort((a,b)=>Date.parse(a.start_at)-Date.parse(b.start_at)).slice(0,2);
+ const lines=[...work.map(t=>'챙길 일 · '+t.title+(t.remaining_action||t.next_action?' — '+(t.remaining_action||t.next_action):'')),...upcoming.map(e=>'일정 · '+(e.all_day?day(e.start_at)+' 종일':kstTime(e.start_at))+' '+e.title)];
+ return lines.length?lines.join('\n'):'오늘~모레 챙길 업무와 일정이 없습니다. 확인할 신규·변경 업무 '+tasks.filter(t=>briefingEligible(t)&&(t.status==='review'||t.pending_review)).length+'건은 확인 목록에 남아 있습니다.';
+}

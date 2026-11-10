@@ -9,3 +9,8 @@ test('종일 일정 종료일은 제외한다',()=>{const e={all_day:true,start_
 test('링크로 스크립트와 자격증명을 허용하지 않는다',()=>{assert.equal(safeURL('javascript:alert(1)'), '');assert.equal(safeURL('https://user:pass@example.com'),'');assert.equal(safeURL('https://example.com'),'https://example.com/');});
 test('보관된 업무는 일반 안내에서 제외',()=>{const t={title:'보관',archived:true,status:'partial',next_review_on:'2026-01-01'};assert.equal(briefingEligible(t),false);assert.equal(matchesTask(t,'all'),false);assert.equal(matchesTask(t,'archived'),true);});
 test('다음 확인을 미룬 업무는 지난 마감일 때문에 매일 재안내하지 않는다',()=>{const t={title:'회신 대기',status:'waiting',due_date:'2026-11-01',next_review_on:'2026-11-13'};assert.equal(needsAttention(t,'2026-11-10'),false);assert.equal(needsAttention(t,'2026-11-13'),true);assert.equal(t.due_date,'2026-11-01');});
+test('briefing reflects current unfinished actions and excludes removed events',async()=>{
+ const {currentBriefing}=await import('../src/model.js');
+ const date='2026-11-10',result=currentBriefing([{title:'남은 답변',status:'partial',next_review_on:date,remaining_action:'답변만 확인'},{title:'완료 숨김',status:'done',due_date:date},{title:'보류 숨김',status:'todo',due_date:date,next_review_on:'2026-11-20'}],[{title:'제외 일정',excluded:true,start_at:date+'T10:00:00+09:00',end_at:date+'T11:00:00+09:00'},{title:'내일 회의',start_at:'2026-11-11T10:00:00+09:00',end_at:'2026-11-11T11:00:00+09:00'}],date);
+ assert.match(result,/남은 답변 — 답변만 확인/);assert.match(result,/내일 회의/);assert.doesNotMatch(result,/숨김|제외 일정/);
+});
