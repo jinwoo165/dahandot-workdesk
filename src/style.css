@@ -119,3 +119,112 @@ body{color:var(--text);background:var(--bg)}a,.text-btn{color:var(--green)}.pane
 @media(max-height:740px) and (min-width:1151px){.dashboard-grid{gap:10px}.briefing.briefing-expanded{padding:10px 14px}.briefing-expanded ul{gap:3px;margin-top:5px}.briefing-expanded li{font-size:11px}.dashboard-overview .stats{flex-basis:45px;height:45px}.dashboard-grid>.weather-panel{min-height:160px}}
 
 @media(min-width:1800px){.file-card .file-entry{padding:10px 18px 2px}.dashboard-files .file-info strong{-webkit-line-clamp:1}.file-summary{-webkit-line-clamp:2;margin-top:4px;line-height:1.6}.file-info small{margin-top:3px}.file-card>.text-btn{bottom:4px}}
+
+/* v2.6: one shared right-hand rail, measured from the full-work view. */
+.unified-board{--board-gap:14px;--overview-height:244px;--rail-width:calc((100% - var(--board-gap) * 2) * .334365325);grid-template-columns:minmax(0,1fr) var(--rail-width);grid-template-rows:var(--overview-height) minmax(0,1fr);gap:var(--board-gap);align-items:stretch}
+.unified-board>.weather-panel{grid-column:2;grid-row:1;min-height:0;height:100%;width:100%;display:flex;flex-direction:column;justify-content:space-between;padding:12px 16px}
+.shared-briefing{grid-column:1;grid-row:1;min-height:0;display:flex;min-width:0}
+.shared-briefing .briefing-expanded{flex:1;height:100%;overflow:auto;margin:0}
+.unified-board>.shared-main{grid-column:1;grid-row:1/3;display:flex;min-height:0;min-width:0;gap:0}
+.unified-board.has-work>.shared-main{grid-row:2}
+.shared-files{grid-column:2;grid-row:2;display:flex;min-height:0;min-width:0}
+.work-columns{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:var(--board-gap);height:100%;min-height:0;min-width:0;flex:1}
+.work-agenda{min-height:0;min-width:0;display:flex}
+.board-panel-tabs{display:none}
+.unified-board .filters{display:grid;grid-template-columns:1fr 1fr;padding:9px 12px}
+.unified-board .filters input{grid-column:1/-1;width:100%;min-width:0}
+.unified-board .filters select{width:100%;min-width:0;max-width:none;font-size:11px}
+.unified-board .panel-head{padding:13px 14px}
+.unified-board .panel-head h2{font-size:14px}
+.unified-board .panel-head small{font-size:10px}
+.unified-board .agenda-item{padding:13px 14px}
+.unified-board .agenda-item strong{font-size:13px}
+.unified-board .file-check{font-size:9px;padding-inline:12px}
+.task-filters{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;padding:8px 10px 0;flex-shrink:0}
+.task-filters button{min-height:42px;padding:6px 3px;border:1px solid transparent;border-radius:7px;display:flex;align-items:center;justify-content:center;gap:5px;font-size:11px;color:var(--muted);background:transparent}
+.task-filters button[aria-pressed=true]{background:var(--soft);border-color:var(--line);color:var(--green);font-weight:700}
+.task-filters b{font-weight:600;font-size:11px}
+.task-filter-hint{font-size:10px;line-height:1.6;color:var(--muted);padding:8px 14px;margin:0;flex-shrink:0;border-bottom:1px solid var(--line)}
+.title-row{display:grid;grid-template-columns:204px minmax(0,1fr) 208px;column-gap:24px;height:84px;min-height:84px}
+.title-copy{width:204px;max-width:none;min-width:0;flex:none}
+.title-copy h1{font-size:24px;white-space:nowrap;line-height:1.25}
+.title-copy .sub{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.5}
+.title-row .actions{display:flex;justify-content:flex-end;gap:8px;width:208px;margin:0;flex:none}
+.title-row .actions .btn{padding:11px 10px;min-height:42px;white-space:nowrap;font-size:11px;gap:6px}
+.title-row .scenic-banner{width:100%;height:84px}
+.scenic-banner>img{opacity:1;animation:city-breathe 16s ease-in-out infinite alternate;will-change:transform}
+@keyframes city-breathe{from{transform:scale(1.025)}to{transform:scale(1.075)}}
+.account-actions{display:flex;align-items:center;justify-content:space-between;gap:7px;padding-top:7px}
+.account-actions .text-btn{font-size:10px;white-space:nowrap;color:var(--muted)}
+.mobile-account-menu{display:none}
+.help-sections{max-height:min(70dvh,620px);overflow:auto}
+.help-sections section{padding:0 0 17px;margin-bottom:16px;border-bottom:1px solid var(--line)}
+.help-sections h3{font-size:14px;margin:0 0 8px}
+.help-sections p{font-size:12px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
+.links-hint{margin:0;padding:10px 16px;border-bottom:1px solid var(--line);font-size:11px;color:var(--muted);line-height:1.6;flex-shrink:0}
+.managed-link{display:flex;align-items:center;border-bottom:1px solid var(--line);gap:12px;padding:0 14px}
+.managed-link .link-card{flex:1;min-width:0;border:0;padding:12px 4px;display:flex;flex-direction:column;gap:7px}
+.managed-link strong{font-size:13px;line-height:1.5;overflow-wrap:anywhere}
+.managed-link .link-card span{font-size:11px;line-height:1.6;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.link-action{border:1px solid var(--line);border-radius:7px;background:var(--surface);color:var(--muted);min-width:52px;min-height:40px;font-size:11px;flex-shrink:0}
+.link-action:hover{background:var(--soft);color:var(--text)}
+.link-action:disabled{opacity:.5}
+@media(min-width:1600px){.unified-board{--board-gap:18px}.title-row,.title-row .scenic-banner{height:116px;min-height:116px}.unified-board .panel-head{padding:16px 18px}.shared-briefing .briefing-expanded{padding:18px 20px}.shared-briefing .briefing-expanded li{font-size:13px;line-height:1.8}.shared-briefing .briefing-expanded ul{gap:6px}.task-filters button{font-size:12px}.task-filter-hint{font-size:11px}}
+@media(max-width:1250px) and (min-width:901px){.title-row{grid-template-columns:180px minmax(0,1fr) 190px;gap:16px}.title-copy{width:180px}.title-copy h1{font-size:22px}.title-row .actions{width:190px}.title-row .actions .btn{padding:9px;font-size:11px}.title-row,.title-row .scenic-banner{height:70px;min-height:70px}}
+@media(max-height:740px) and (min-width:1151px){.unified-board{--overview-height:210px}.title-row,.title-row .scenic-banner{height:58px;min-height:58px}.title-copy .sub{display:none}.shared-briefing .briefing-expanded{padding:11px 14px}.shared-briefing .briefing-expanded li{font-size:11px;line-height:1.6}}
+@media(max-width:1150px){
+ .unified-board{display:flex;flex-direction:column;overflow:auto;overscroll-behavior:contain;gap:10px;padding-bottom:4px}
+ .unified-board>.weather-panel{order:0;flex:0 0 116px;min-height:116px;height:116px;display:block;padding:8px 12px}
+ .shared-briefing{order:1;display:flex;flex:none;min-height:0}
+ .shared-briefing .briefing-expanded{height:auto;flex:none;width:100%;padding:12px;overflow:visible}
+ .board-panel-tabs{display:flex;order:2;flex:0 0 44px;min-height:44px;gap:4px;padding:3px;background:var(--surface);border:1px solid var(--line);border-radius:8px;position:sticky;top:0;z-index:2}
+ .board-panel-tabs button{flex:1;min-width:0;border:0;background:transparent;border-radius:6px;font-size:11px;color:var(--muted)}
+ .board-panel-tabs button[aria-pressed=true]{background:var(--soft);color:var(--green);font-weight:700}
+ .unified-board>.shared-main,.shared-files{order:3;flex:1 0 380px;min-height:380px;width:100%;display:flex}
+ .work-columns{display:flex;flex:1;min-height:0}
+ .work-agenda{width:100%;flex:1;min-height:0}
+ .unified-board[data-mobile-panel=work]>.shared-files,.unified-board[data-mobile-panel=work] .work-agenda,.unified-board[data-mobile-panel=agenda]>.shared-files,.unified-board[data-mobile-panel=agenda] #viewBody,.unified-board[data-mobile-panel=files]>.shared-main{display:none}
+ .unified-board.has-work[data-mobile-panel=agenda]>.shared-main{display:flex}
+ .unified-board[data-mobile-panel=work]>.shared-main{display:flex}
+ .unified-board .calendar-layout{height:100%;min-height:380px}
+ .unified-board .weather-content{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:center}
+ .unified-board .weather-now{width:auto;min-width:0;padding:5px 0;min-height:44px}
+ .unified-board .weather-now strong{font-size:28px}
+ .unified-board .weather-symbol{font-size:30px}
+ .unified-board .weather-range{display:none}
+ .unified-board .weather-tomorrow{width:auto;min-width:0;border-top:0;border-left:1px solid var(--line);padding:0 0 0 12px;display:flex;flex-wrap:wrap;gap:4px 8px;font-size:10px}
+ .unified-board .weather-credit{font-size:8px;margin-top:4px}
+ .unified-board .weather-heading{font-size:11px}
+ .unified-board .weather-controls button{min-height:28px}
+}
+@media(max-width:900px){
+ .title-row{display:flex;width:100%;height:68px;min-height:68px!important;gap:8px;padding:0 12px}
+ .title-copy{width:auto;min-width:0;flex:1}
+ .title-copy h1{font-size:18px;white-space:nowrap}
+ .title-copy .sub{display:none}
+ .title-row .scenic-banner{position:absolute;inset:0;width:100%;height:100%;min-height:0}
+ .title-row .actions{width:auto;flex:0 0 auto;gap:5px;margin:0 22px 0 0}
+ .title-row .actions .btn{padding:8px;min-height:40px;font-size:10px}
+ .title-row .actions #addBtn span{display:none}
+ .title-row .actions #addBtn{font-size:17px;min-width:40px}
+ .mobile-brand{gap:8px}
+ .mobile-brand select{flex:1;width:auto;max-width:165px;font-size:14px;min-height:40px}
+ .mobile-account-menu{display:block;position:relative;flex:0 0 36px}
+ .mobile-account-menu>summary{cursor:pointer;display:grid;place-items:center;min-height:42px;list-style:none;font-size:22px;color:var(--green)}
+ .mobile-account-menu>summary::-webkit-details-marker{display:none}
+ .mobile-account-menu>div{position:absolute;right:0;top:45px;min-width:175px;z-index:20;border:1px solid var(--line);background:var(--surface);box-shadow:0 8px 24px #0002;border-radius:10px;padding:5px}
+ .mobile-account-menu button{display:block;width:100%;text-align:left;border:0;background:transparent;color:var(--text);font-size:13px;min-height:44px;padding:8px 12px}
+ .task-filters button{min-height:44px;font-size:11px;flex-direction:column;gap:1px;padding:4px}
+ .task-filters b{font-size:10px}
+ .task-filter-hint{font-size:10px;padding:7px 12px}
+ .unified-board .filters{padding:8px 10px;gap:6px;display:grid;grid-template-columns:1fr 1fr}
+ .unified-board .filters input{grid-column:1/-1;font-size:16px;padding:8px;min-height:40px}
+ .unified-board .filters select{min-width:0;width:100%;max-width:none;font-size:12px;min-height:38px}
+ .unified-board .panel-head{padding:12px}
+ .unified-board .panel-head .text-btn,.link-action{min-height:44px;min-width:44px}
+ .unified-board .calendar-layout{min-height:410px}
+ .unified-board>.shared-main:has(.calendar-layout){min-height:410px;flex-basis:410px}
+ .scenic-banner button{min-width:32px;min-height:32px;width:32px;height:32px}
+ .managed-link{padding:0 12px;gap:8px}
+}
+@media(prefers-reduced-motion:reduce){.scenic-banner>img{animation:none;opacity:1;transform:none}}

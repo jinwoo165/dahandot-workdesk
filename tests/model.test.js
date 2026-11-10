@@ -1,5 +1,8 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {day,monthBounds,needsAttention,matchesTask,eventOnDay,validateTask,safeURL,briefingEligible} from '../src/model.js';
+import {taskFilterCounts} from '../src/task-filters.js';
+test('미래 확인일은 고정보다 우선하며 실제 마감일을 유지한다',()=>{const t={title:'미룬 일',status:'partial',pinned:true,due_date:'2026-11-01',next_review_on:'2026-11-13'};assert.equal(needsAttention(t,'2026-11-10'),false);assert.equal(needsAttention(t,'2026-11-13'),true);assert.equal(t.due_date,'2026-11-01');});
+test('통합 분류의 건수는 완료·보관·확인 필요 상태를 구분한다',()=>{const counts=taskFilterCounts([{title:'고정',status:'todo',pinned:true},{title:'기한 없음',status:'todo'},{title:'남은 일',status:'partial'},{title:'원본 변경',status:'done',pending_review:true},{title:'숨김',status:'partial',archived:true}]);assert.deepEqual(counts,{today:1,all:3,review:1,partial:1,done:1});});
 test('완료는 오늘 안내에서 제외되고 완료 목록에는 남는다',()=>{const t={title:'보고',status:'done',pinned:true,due_date:'2026-11-01'};assert.equal(needsAttention(t,'2026-11-10'),false);assert.equal(briefingEligible(t),false);assert.equal(matchesTask(t,'done'),true);});
 test('부분 완료는 다음 확인일에 다시 표시된다',()=>{const t={title:'부분',status:'partial',remaining_action:'회신',next_review_on:'2026-11-11'};assert.equal(needsAttention(t,'2026-11-10'),false);assert.equal(needsAttention(t,'2026-11-11'),true);assert.equal(briefingEligible(t),true);});
 test('남은 일을 전체 완료로 잘못 저장하지 않는다',()=>{assert.throws(()=>validateTask({title:'업무',status:'done',remaining_action:'회신'}));assert.throws(()=>validateTask({title:'업무',status:'done',next_review_on:'2026-11-11'}));assert.throws(()=>validateTask({title:'업무',status:'partial',remaining_action:''}));});

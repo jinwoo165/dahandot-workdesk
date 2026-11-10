@@ -16,7 +16,7 @@ export function upcomingEvents(events,today=day(),days=30){
 }
 export const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function safeURL(s){try{const u=new URL(s);return ['https:','http:'].includes(u.protocol)&&!u.username&&!u.password?u.href:'';}catch{return '';}}
-export function needsAttention(t,today=day()){if(t.archived||t.status==='done')return false;if(t.pinned)return true;if(t.next_review_on&&t.next_review_on>today)return false;return Boolean((t.due_date&&t.due_date<=today)||(t.next_review_on&&t.next_review_on<=today));}
+export function needsAttention(t,today=day()){if(t.archived||t.status==='done')return false;if(t.next_review_on&&t.next_review_on>today)return false;if(t.pinned)return true;return Boolean((t.due_date&&t.due_date<=today)||(t.next_review_on&&t.next_review_on<=today));}
 export function matchesTask(t,view,q='',today=day()){
  if(view==='archived'?!t.archived:t.archived)return false;
  if(view==='today'&&!needsAttention(t,today))return false;
