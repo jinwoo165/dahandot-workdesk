@@ -7,7 +7,7 @@ import {sourceHealth,collectionSummary} from './source-health.js';
 import {summaryForFile} from './file-summaries.js';
 import sceneryURL from './assets/city-panorama-ai.webp';
 import './style.css';
-const APP_VERSION='2.5.0';
+const APP_VERSION='2.5.1';
 const demo=new URLSearchParams(location.search).get('demo')==='1';
 const db=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 const $=s=>document.querySelector(s), app=$('#app');
@@ -63,13 +63,13 @@ async function loadFileSummaries(){
 function fileEntry(f){
  const url=safeURL(f.web_url),summary=summaryForFile(f,state.fileSummaries);
  const label=summary.status==='ok'?'본문 요약':summary.status==='partial'?'일부 본문 요약':'';
- const body=`<span class="file-icon ${fileKind(f.name).toLowerCase()}">${fileKind(f.name)}</span><span class="file-info"><strong>${esc(f.name)}</strong><span class="file-meta"><b class="${f.change_kind==='created'?'file-new':''}">${f.change_kind==='created'?'신규':'수정'}</b> ${kstTime(f.changed_at)}${url?' ↗':''}</span><span class="file-summary ${label?'has-summary':'summary-pending'}" title="${esc(summary.detail)}">${label?`<em>${label}</em>`:''}${esc(summary.text)}</span><small title="${esc(f.folder_path)}">${esc(f.folder_path.split('/').filter(Boolean).slice(-2).join(' / '))}</small></span>`;
+ const body=`<span class="file-icon ${fileKind(f.name).toLowerCase()}">${fileKind(f.name)}</span><span class="file-info"><strong title="${esc(f.name)}">${esc(f.name)}</strong><span class="file-meta"><b class="${f.change_kind==='created'?'file-new':''}">${f.change_kind==='created'?'신규':'수정'}</b> ${kstTime(f.changed_at)}${url?' ↗':''}</span><span class="file-summary ${label?'has-summary':'summary-pending'}" title="${esc(summary.detail)}">${label?`<em>${label}</em>`:''}${esc(summary.text)}</span><small title="${esc(f.folder_path)}">${esc(f.folder_path.split('/').filter(Boolean).slice(-2).join(' / '))}</small></span>`;
  return `<article class="file-card">${url?`<a class="file-entry" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${body}</a>`:`<div class="file-entry">${body}</div>`}${label?infoButton('file-summary:'+f.item_id,f.name,summary.text+'\n\n'+summary.detail+'\n본문 확인 '+kstTime(summary.checkedAt),'요약 전체'):''}</article>`;
 }
 function filesWidget(){
  const files=recentFiles(state.files),run=state.fileRuns[0],bad=state.fileError||run?.status==='failed';
  const count=files.filter(f=>['ok','partial'].includes(summaryForFile(f,state.fileSummaries).status)).length;
- return `<section class="panel files-panel paged-panel" aria-label="OneDrive 최근 자료"><div class="panel-head"><div><h2>OneDrive 최근 자료</h2><small>최근 7일 · ${files.length}개 · 본문 요약 ${count}개</small></div><span class="cloud-mark" aria-hidden="true">☁</span></div>${bad?`<p class="widget-alert">${esc(state.fileError||'최근 조회 실패 · 이전 목록입니다.')}</p>`:''}${state.summaryError?`<p class="widget-alert">${esc(state.summaryError)}</p>`:''}${pageList(files,'files',fileEntry,180,run&&run.status!=='failed'?'최근 변경 파일이 없습니다.':'아직 확인된 파일이 없습니다.')}<div class="file-check"><span>${run?'확인 '+kstTime(run.checked_at):'조회 대기'}${run?.status==='partial'?' · 일부 범위':''}</span>${infoButton('file-scope','OneDrive 확인 범위',(run?.detail||'다음 업무보드 원본 조회 때 OneDrive 변경 목록을 수집합니다.')+'\n\n요약은 실제 읽은 본문의 요지입니다. 파일이 수정되면 다시 확인하기 전까지 이전 요약을 표시하지 않습니다. 읽지 않은 파일은 요약 대기로 구분합니다.\n파일별 최신 생성·변경을 표시하며 삭제·모든 중간 저장을 추적하는 감사 로그는 아닙니다.','범위')}</div></section>`;
+ return `<section class="panel files-panel paged-panel" aria-label="OneDrive 최근 자료"><div class="panel-head"><div><h2>OneDrive 최근 자료</h2><small>최근 7일 · ${files.length}개 · 본문 요약 ${count}개</small></div><span class="cloud-mark" aria-hidden="true">☁</span></div>${bad?`<p class="widget-alert">${esc(state.fileError||'최근 조회 실패 · 이전 목록입니다.')}</p>`:''}${state.summaryError?`<p class="widget-alert">${esc(state.summaryError)}</p>`:''}${pageList(files,'files',fileEntry,innerWidth>=1800?144:180,run&&run.status!=='failed'?'최근 변경 파일이 없습니다.':'아직 확인된 파일이 없습니다.')}<div class="file-check"><span>${run?'확인 '+kstTime(run.checked_at):'조회 대기'}${run?.status==='partial'?' · 일부 범위':''}</span>${infoButton('file-scope','OneDrive 확인 범위',(run?.detail||'다음 업무보드 원본 조회 때 OneDrive 변경 목록을 수집합니다.')+'\n\n요약은 실제 읽은 본문의 요지입니다. 파일이 수정되면 다시 확인하기 전까지 이전 요약을 표시하지 않습니다. 읽지 않은 파일은 요약 대기로 구분합니다.\n파일별 최신 생성·변경을 표시하며 삭제·모든 중간 저장을 추적하는 감사 로그는 아닙니다.','범위')}</div></section>`;
 }
 
 function toast(s){$('#toast').textContent=s;$('#toast').className='show';clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').className='',4500);}
