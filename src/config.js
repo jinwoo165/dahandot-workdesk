@@ -2,5 +2,5 @@
 export const SUPABASE_URL = 'https://qiwgesnpcqqnmovnpvnh.supabase.co';
 export const SUPABASE_KEY = 'sb_publishable_tUjdEhmUZDCJZuFPyCoVBQ_yTAUBAJF';
 
-// Enable only after the owner verifies the production Auth redirect URL.
-export const LOGIN_CONFIGURED = false;
+// Production Site URL and exact Auth redirect URL are configured.
+export const LOGIN_CONFIGURED = true;
