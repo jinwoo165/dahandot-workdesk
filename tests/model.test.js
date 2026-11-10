@@ -1,0 +1,10 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {day,monthBounds,needsAttention,matchesTask,eventOnDay,validateTask,safeURL,briefingEligible} from '../src/model.js';
+test('완료는 오늘 안내에서 제외되고 완료 목록에는 남는다',()=>{const t={title:'보고',status:'done',pinned:true,due_date:'2026-11-01'};assert.equal(needsAttention(t,'2026-11-10'),false);assert.equal(briefingEligible(t),false);assert.equal(matchesTask(t,'done'),true);});
+test('부분 완료는 다음 확인일에 다시 표시된다',()=>{const t={title:'부분',status:'partial',remaining_action:'회신',next_review_on:'2026-11-11'};assert.equal(needsAttention(t,'2026-11-10'),false);assert.equal(needsAttention(t,'2026-11-11'),true);assert.equal(briefingEligible(t),true);});
+test('남은 일을 전체 완료로 잘못 저장하지 않는다',()=>{assert.throws(()=>validateTask({title:'업무',status:'done',remaining_action:'회신'}));assert.throws(()=>validateTask({title:'업무',status:'done',next_review_on:'2026-11-11'}));assert.throws(()=>validateTask({title:'업무',status:'partial',remaining_action:''}));});
+test('완료 후 원본 변경은 확인 목록에 나타나지만 완료 상태를 유지한다',()=>{const t={title:'업무',status:'done',pending_review:true};assert.equal(matchesTask(t,'review'),true);assert.equal(matchesTask(t,'today'),false);});
+test('한국시간 경계와 연말 월 이동',()=>{assert.equal(day('2026-11-09T16:00:00Z'),'2026-11-10');assert.deepEqual(monthBounds('2026-12'),['2026-12-01','2027-01-01']);});
+test('종일 일정 종료일은 제외한다',()=>{const e={all_day:true,start_at:'2026-11-10T00:00:00+09:00',end_at:'2026-11-11T00:00:00+09:00'};assert.equal(eventOnDay(e,'2026-11-10'),true);assert.equal(eventOnDay(e,'2026-11-11'),false);});
+test('링크로 스크립트와 자격증명을 허용하지 않는다',()=>{assert.equal(safeURL('javascript:alert(1)'), '');assert.equal(safeURL('https://user:pass@example.com'),'');assert.equal(safeURL('https://example.com'),'https://example.com/');});
+test('보관된 업무는 일반 안내에서 제외',()=>{const t={title:'보관',archived:true,status:'partial',next_review_on:'2026-01-01'};assert.equal(briefingEligible(t),false);assert.equal(matchesTask(t,'all'),false);assert.equal(matchesTask(t,'archived'),true);});
