@@ -3,7 +3,17 @@ export const priorities={high:'높음',normal:'보통',low:'낮음'};
 export const day=(d=new Date())=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(d));
 export const addDays=(d,n)=>new Date(Date.parse(d+'T00:00:00Z')+n*864e5).toISOString().slice(0,10);
 export const monthBounds=m=>[m+'-01',new Date(Date.UTC(+m.slice(0,4),+m.slice(5,7),1)).toISOString().slice(0,10)];
-export const kstTime=s=>s?new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(s)):'미확인';
+export const kstTime=s=>s?new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',month:'numeric',day:'numeric',weekday:'short',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(s)):'미확인';
+export const dateLabel=s=>s?`${day(s)} (${new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',weekday:'short'}).format(new Date(s))})`:'미지정';
+export function paginate(items,index=0,size=1){
+ const pageSize=Math.max(1,Math.floor(Number(size)||1)),pages=Math.max(1,Math.ceil(items.length/pageSize));
+ const page=Math.max(0,Math.min(pages-1,Math.floor(Number(index)||0)));
+ return {items:items.slice(page*pageSize,(page+1)*pageSize),page,pages,total:items.length,size:pageSize};
+}
+export function upcomingEvents(events,today=day(),days=30){
+ const start=Date.parse(today+'T00:00:00+09:00'),end=Date.parse(addDays(today,days)+'T00:00:00+09:00');
+ return events.filter(e=>!e.excluded&&e.status!=='cancelled'&&Date.parse(e.start_at)<end&&Date.parse(e.end_at)>start).sort((a,b)=>Date.parse(a.start_at)-Date.parse(b.start_at)||a.id.localeCompare(b.id));
+}
 export const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function safeURL(s){try{const u=new URL(s);return ['https:','http:'].includes(u.protocol)&&!u.username&&!u.password?u.href:'';}catch{return '';}}
 export function needsAttention(t,today=day()){if(t.archived||t.status==='done')return false;if(t.pinned)return true;if(t.next_review_on&&t.next_review_on>today)return false;return Boolean((t.due_date&&t.due_date<=today)||(t.next_review_on&&t.next_review_on<=today));}

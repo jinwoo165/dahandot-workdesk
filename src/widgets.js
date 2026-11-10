@@ -1,7 +1,7 @@
 import {day,addDays} from './model.js';
 
-export const WEATHER_CITY='천안';
-export const WEATHER_URL='https://api.open-meteo.com/v1/forecast?latitude=36.8151&longitude=127.1139&current=temperature_2m,weather_code,is_day&daily=weather_code,temperature_2m_min,temperature_2m_max,precipitation_probability_max&timezone=Asia%2FSeoul&forecast_days=2';
+export const WEATHER_CITIES=[{id:'cheonan',name:'천안',latitude:36.8151,longitude:127.1139},{id:'seoul',name:'서울',latitude:37.5665,longitude:126.9780}];
+export const weatherURL=city=>{const c=WEATHER_CITIES.find(c=>c.id===city);if(!c)throw Error('지원하지 않는 지역입니다.');return `https://api.open-meteo.com/v1/forecast?latitude=${c.latitude}&longitude=${c.longitude}&current=temperature_2m,weather_code,is_day&daily=weather_code,temperature_2m_min,temperature_2m_max,precipitation_probability_max&timezone=Asia%2FSeoul&forecast_days=2`;};
 const number=n=>typeof n==='number'&&Number.isFinite(n)?n:null;
 export const degrees=n=>number(n)===null?'—':Math.round(n)+'°';
 export function weatherDescription(code,isDay=true){
@@ -26,8 +26,8 @@ export function parseWeather(data,now=new Date()){
  const current=data.current?.time?.startsWith(today)?{temperature:number(data.current.temperature_2m),code:number(data.current.weather_code),isDay:data.current.is_day!==0,time:data.current.time}:null;
  return {days,current,fetchedAt:new Date(now).toISOString()};
 }
-export async function fetchWeather(fetcher=fetch,now=new Date()){
- const response=await fetcher(WEATHER_URL,{signal:AbortSignal.timeout(10000),credentials:'omit',referrerPolicy:'no-referrer'});
+export async function fetchWeather(fetcher=fetch,now=new Date(),city='cheonan'){
+ const response=await fetcher(weatherURL(city),{signal:AbortSignal.timeout(10000),credentials:'omit',referrerPolicy:'no-referrer'});
  if(!response.ok)throw Error('날씨 서비스에 연결하지 못했습니다.');
  return parseWeather(await response.json(),now);
 }
