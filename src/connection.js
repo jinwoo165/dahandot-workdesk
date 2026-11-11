@@ -1,5 +1,6 @@
 export const CONNECTION_WAIT_MS = 8000;
 export const REQUEST_TIMEOUT_MS = 15000;
+export const AUTH_REQUEST_TIMEOUT_MS = 30000;
 
 export class ConnectionTimeoutError extends Error {
   constructor() {
@@ -29,7 +30,8 @@ export function connectionFetch(fetchImpl, timeoutMs = REQUEST_TIMEOUT_MS) {
     const abort = () => controller.abort(upstream.reason);
     if (upstream?.aborted) abort();
     else upstream?.addEventListener('abort', abort, {once: true});
-    const timer = setTimeout(() => controller.abort(new ConnectionTimeoutError()), timeoutMs);
+    const limit=new URL(url).pathname.startsWith('/auth/v1/')&&timeoutMs===REQUEST_TIMEOUT_MS?AUTH_REQUEST_TIMEOUT_MS:timeoutMs;
+    const timer = setTimeout(() => controller.abort(new ConnectionTimeoutError()), limit);
     try { return await fetchImpl(input, {...init, signal: controller.signal}); }
     finally { clearTimeout(timer); upstream?.removeEventListener('abort', abort); }
   };
