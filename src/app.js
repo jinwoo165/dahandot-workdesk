@@ -13,7 +13,7 @@ import {linkedText,sourceReferencesHTML,taskDetailContent,eventDetailContent} fr
 import {normalizeBriefingLine,briefingItems,briefingListHTML} from './briefing.js';
 import sceneryURL from './assets/city-panorama-ai.webp';
 import './style.css';
-const APP_VERSION='2.8.7';
+const APP_VERSION='2.8.8';
 const demo=new URLSearchParams(location.search).get('demo')==='1';
 let recoveryPending=recoveryFromURL(location.hash);
 const db=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},global:{fetch:connectionFetch(fetch)}});
@@ -25,7 +25,7 @@ const views={
  work:['업무 목록','오늘 챙길 일부터 완료 기록까지,\n한곳에서 확인하세요.','☷'],
  calendar:['달력 · 업무 이력','날짜별 일정과 월별 변경 기록을\n함께 확인하세요.','▦'],
  links:['업무 바로가기','업무 갱신 때 확인한\n유용한 원문과 자료를 모읍니다.','↗'],
- archived:['보관한 업무','일반 목록에서 잠시 치워 둔\n업무입니다.\n기록은 남아 있습니다.','▱']
+ archived:['보관한 업무','일반 목록에서\n잠시 치워 둔 업무입니다.\n기록은 남아 있습니다.','▱']
 };
 const CLOVA_URL='https://clovanote.worksmobile.com/';
 let theme;try{theme=localStorage.getItem('dahandot-theme');}catch{}
