@@ -11,7 +11,7 @@ import {connectionFetch,createSessionCheck,withDeadline} from './connection.js';
 import {authenticationMessage,authDeadline,passwordActions,mountLogin,loginShell,passwordFormHTML,bindPasswordForm,recoveryFromURL,authDestination} from './authentication.js';
 import sceneryURL from './assets/city-panorama-ai.webp';
 import './style.css';
-const APP_VERSION='2.8.1';
+const APP_VERSION='2.8.2';
 const demo=new URLSearchParams(location.search).get('demo')==='1';
 let recoveryPending=recoveryFromURL(location.hash);
 const db=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},global:{fetch:connectionFetch(fetch)}});

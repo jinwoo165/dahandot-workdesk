@@ -369,7 +369,7 @@ body{color:var(--text);background:var(--bg)}a,.text-btn{color:var(--green)}.pane
 }
 
 /* Password login and authenticated first-time setup. */
-.login-card input,.password-form input:not([hidden]){width:100%;min-height:46px;font-size:16px}
+.login-card input,.password-form input:not([type=hidden]){width:100%;min-height:46px;font-size:16px}
 .login-options{display:flex;flex-direction:column;gap:6px;margin-top:12px}
 .login-options button{min-height:38px;text-align:left;padding:7px 0;color:var(--green);font-size:13px}
 .login-card .login-note{margin:24px 0 0;font-size:12px;line-height:1.7;color:var(--muted)}
@@ -378,5 +378,5 @@ body{color:var(--text);background:var(--bg)}a,.text-btn{color:var(--green)}.pane
 .password-form label{display:block;margin:20px 0 8px;font-size:14px;font-weight:600}
 .password-form small{display:block;margin-top:7px;font-size:12px;color:var(--muted)}
 .password-form .btn{width:100%;margin-top:20px;min-height:44px}.password-cancel{margin-top:12px;min-height:40px}
-.password-dialog{padding:30px;max-width:480px}.account-password{font-size:11px;padding:4px 0;min-height:28px;margin-top:6px}
+#detail:has(.password-form){width:min(480px,calc(100vw - 32px))}.password-dialog{padding:30px;max-width:none}.account-password{font-size:11px;padding:4px 0;min-height:28px;margin-top:6px}
 @media(max-width:700px){.login-story{padding:22px 24px}.login-story .brand{margin-bottom:20px}.login-story h1{font-size:26px}.login-story>p,.login-story .story-line,.login-story .eyebrow{display:none}.login-panel{padding:26px 24px}.password-dialog{padding:24px}}
