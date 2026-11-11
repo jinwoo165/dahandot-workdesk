@@ -425,6 +425,29 @@ dialog>.dialog-body{max-height:calc(92dvh - 160px);overflow-y:auto;overscroll-be
 .conversation-context .text-btn{font-size:12px;margin-top:6px;text-decoration:underline;text-underline-offset:3px}
 .agenda-open{display:block;width:100%;text-align:left;padding:0;min-height:0}
 .agenda-open:hover strong{text-decoration:underline;text-underline-offset:3px}
+
+/* Summary visibility is independent of task status and source collection. */
+.has-work .shared-briefing .briefing-expanded{overflow:hidden}
+.briefing-content{display:flex;flex-direction:column;height:100%;min-height:0}
+.briefing-content .briefing-heading{flex-shrink:0}
+.briefing-expanded .briefing-lines{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;margin-bottom:0;padding-right:3px}
+.briefing-expanded .briefing-lines li{display:flex;align-items:flex-start;gap:8px}
+.briefing-lines li>span{flex:1;min-width:0}
+.briefing-lines .briefing-line-action{flex-shrink:0;min-height:24px;min-width:24px;padding:0 4px;border-radius:4px;color:var(--muted);font-size:11px;line-height:24px}
+.briefing-lines .briefing-dismiss{font-size:18px;line-height:22px}
+.briefing-line-action:hover,.briefing-tools button:hover{background:var(--line);color:var(--text)}
+.briefing-line-action:focus-visible,.briefing-tools button:focus-visible,.briefing-lines:focus-visible{outline:2px solid #8db9ac;outline-offset:-2px}
+.briefing-tools{display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-shrink:0;min-height:22px;margin-top:2px}
+.briefing-tools button{min-height:22px;font-size:10px;color:var(--muted);padding:1px 3px;border-radius:3px;white-space:nowrap}
+.briefing-tools small{font-size:10px;line-height:1.4;color:var(--muted)}
+.briefing-empty{flex:1;min-height:0;margin:6px 0 0;font-size:12px;color:var(--muted);overflow:auto}
+.briefing-error{font-size:11px;margin:3px 0;color:var(--muted)}
+@media(min-width:901px){
+ .title-row .title-copy .sub{display:block;white-space:pre-line;word-break:keep-all;overflow-wrap:normal;-webkit-line-clamp:unset;overflow:visible;font-size:12px;line-height:1.6;margin-top:6px}
+}
+@media(max-width:1150px){
+ .has-work>.shared-briefing{flex-basis:112px;height:112px}
+}
 @media(max-width:760px){
  #detail>.task-detail{max-height:95dvh}
  .task-detail-title{font-size:20px}
