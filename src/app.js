@@ -2,7 +2,7 @@ import {createClient} from '@supabase/supabase-js';
 import {SUPABASE_URL,SUPABASE_KEY,LOGIN_CONFIGURED} from './config.js';
 import {statuses,day,addDays,monthBounds,kstTime,escapeHTML as esc,safeURL,needsAttention,matchesTask,eventOnDay,currentBriefing,dateLabel,upcomingEvents} from './model.js';
 import {messageStatuses,validateMessage,messagesForTarget,mergeCalendarOverrides} from './conversations.js';
-import {WEATHER_CITIES,degrees,weatherDescription,fetchWeather,recentFiles,fileKind} from './widgets.js';
+import {WEATHER_CITIES,degrees,weatherDescription,fetchWeather,recentFiles,RECENT_FILES_LIMIT,fileKind} from './widgets.js';
 import {sourceHealth,collectionSummary} from './source-health.js';
 import {summaryForFile} from './file-summaries.js';
 import {TASK_FILTERS,taskFilterCounts} from './task-filters.js';
@@ -12,7 +12,7 @@ import {authenticationMessage,authDeadline,passwordActions,mountLogin,loginShell
 import {linkedText,sourceReferencesHTML,taskDetailContent} from './task-details.js';
 import sceneryURL from './assets/city-panorama-ai.webp';
 import './style.css';
-const APP_VERSION='2.8.4';
+const APP_VERSION='2.8.5';
 const demo=new URLSearchParams(location.search).get('demo')==='1';
 let recoveryPending=recoveryFromURL(location.hash);
 const db=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},global:{fetch:connectionFetch(fetch)}});
@@ -88,7 +88,7 @@ function fileEntry(f){
 function filesWidget(){
  const files=recentFiles(state.files),run=state.fileRuns[0],bad=state.fileError||run?.status==='failed';
  const count=files.filter(f=>['ok','partial'].includes(summaryForFile(f,state.fileSummaries).status)).length;
- return `<section class="panel files-panel paged-panel" aria-label="OneDrive 최근 자료"><div class="panel-head"><div><h2>OneDrive 최근 자료</h2><small>최근 7일 · 파일 ${files.length}개<small class="summary-progress">본문 요약 ${count}개 · 미요약 ${files.length-count}개</small></small></div><span class="cloud-mark" aria-hidden="true">☁</span></div>${bad?`<p class="widget-alert">${esc(state.fileError||'최근 조회 실패 · 이전 목록입니다.')}</p>`:''}${state.summaryError?`<p class="widget-alert">${esc(state.summaryError)}</p>`:''}${scrollList(files,'files',fileEntry,run&&run.status!=='failed'?'최근 변경 파일이 없습니다.':'아직 확인된 파일이 없습니다.')}<div class="file-check"><span>${run?'확인 '+kstTime(run.checked_at):'조회 대기'}${run?.status==='partial'?' · 검색 범위 안내':''}</span>${infoButton('file-scope','OneDrive 확인 범위',(run?.detail||'다음 업무보드 원본 조회 때 OneDrive 변경 목록을 수집합니다.')+'\n\n요약은 실제 읽은 본문의 요지입니다. 파일이 수정되면 다시 확인하기 전까지 이전 요약을 표시하지 않습니다. 읽지 않은 파일은 요약 대기로 구분합니다.\n파일별 최신 생성·변경을 표시하며 삭제·모든 중간 저장을 추적하는 감사 로그는 아닙니다.','범위')}</div></section>`;
+ return `<section class="panel files-panel paged-panel" aria-label="OneDrive 최근 자료"><div class="panel-head"><div><h2>OneDrive 최근 자료</h2><small>최근 7일 · 파일 ${files.length}개 (최대 ${RECENT_FILES_LIMIT}개)<small class="summary-progress">본문 요약 ${count}개 · 미요약 ${files.length-count}개</small></small></div><span class="cloud-mark" aria-hidden="true">☁</span></div>${bad?`<p class="widget-alert">${esc(state.fileError||'최근 조회 실패 · 이전 목록입니다.')}</p>`:''}${state.summaryError?`<p class="widget-alert">${esc(state.summaryError)}</p>`:''}${scrollList(files,'files',fileEntry,run&&run.status!=='failed'?'최근 변경 파일이 없습니다.':'아직 확인된 파일이 없습니다.')}<div class="file-check"><span>${run?'확인 '+kstTime(run.checked_at):'조회 대기'}${run?.status==='partial'?' · 검색 범위 안내':''}</span>${infoButton('file-scope','OneDrive 확인 범위',(run?.detail||'다음 업무보드 원본 조회 때 OneDrive 변경 목록을 수집합니다.')+`\n\n최근 7일의 파일별 최신 변경을 기준으로, 최신 ${RECENT_FILES_LIMIT}개까지 표시합니다. 기존 변경 이력은 보존합니다.`+'\n\n요약은 실제 읽은 본문의 요지입니다. 파일이 수정되면 다시 확인하기 전까지 이전 요약을 표시하지 않습니다. 읽지 않은 파일은 요약 대기로 구분합니다.\n파일별 최신 생성·변경을 표시하며 삭제·모든 중간 저장을 추적하는 감사 로그는 아닙니다.','범위')}</div></section>`;
 }
 
 function toast(s){$('#toast').textContent=s;$('#toast').className='show';clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').className='',4500);}

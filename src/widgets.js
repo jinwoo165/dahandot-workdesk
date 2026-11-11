@@ -31,11 +31,12 @@ export async function fetchWeather(fetcher=fetch,now=new Date(),city='cheonan'){
  if(!response.ok)throw Error('날씨 서비스에 연결하지 못했습니다.');
  return parseWeather(await response.json(),now);
 }
-// Show one latest entry per file. Earlier observed changes remain in the database.
+export const RECENT_FILES_LIMIT=30;
+// Show up to 30 latest files after deduplication. Earlier changes remain stored.
 export function recentFiles(items,now=new Date()){
  const since=Date.parse(addDays(day(now),-6)+'T00:00:00+09:00'),seen=new Set();
  return [...items].filter(f=>Date.parse(f.changed_at)>=since&&Date.parse(f.changed_at)<=+new Date(now)+300000)
  .sort((a,b)=>Date.parse(b.changed_at)-Date.parse(a.changed_at)||String(a.item_id).localeCompare(String(b.item_id)))
- .filter(f=>{const k=f.drive_id+':'+f.item_id;if(seen.has(k))return false;seen.add(k);return true;});
+ .filter(f=>{const k=f.drive_id+':'+f.item_id;if(seen.has(k))return false;seen.add(k);return true;}).slice(0,RECENT_FILES_LIMIT);
 }
 export function fileKind(name){const ext=String(name).split('.').pop().toLowerCase();return {xlsx:'XLS',xls:'XLS',csv:'CSV',pptx:'PPT',ppt:'PPT',docx:'DOC',doc:'DOC',pdf:'PDF',txt:'TXT',html:'WEB',png:'IMG',jpg:'IMG',jpeg:'IMG',zip:'ZIP'}[ext]||'FILE';}
