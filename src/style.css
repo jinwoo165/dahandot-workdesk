@@ -380,3 +380,27 @@ body{color:var(--text);background:var(--bg)}a,.text-btn{color:var(--green)}.pane
 .password-form .btn{width:100%;margin-top:20px;min-height:44px}.password-cancel{margin-top:12px;min-height:40px}
 #detail:has(.password-form){width:min(480px,calc(100vw - 32px))}.password-dialog{padding:30px;max-width:none}.account-password{font-size:11px;padding:4px 0;min-height:28px;margin-top:6px}
 @media(max-width:700px){.login-story{padding:22px 24px}.login-story .brand{margin-bottom:20px}.login-story h1{font-size:26px}.login-story>p,.login-story .story-line,.login-story .eyebrow{display:none}.login-panel{padding:26px 24px}.password-dialog{padding:24px}}
+
+/* v2.8.3: preserve panel frames; scroll their contents in every view. */
+.paged-panel{overflow:hidden}
+.panel-scroll .task-note{white-space:normal;overflow-wrap:anywhere}
+.panel-scroll .message-card{min-height:140px}
+.panel-scroll .timeline{border-bottom:1px solid var(--line)}
+.weather-scroll{width:100%;height:100%;min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-gutter:stable}
+.weather-scroll:focus-visible,.source-detail:focus-visible,#detailHistory:focus-visible{outline:2px solid #8db9ac;outline-offset:-2px}
+.weather-city{min-height:100%;display:flex;flex-direction:column;justify-content:space-between;gap:4px;padding:2px 0}
+.weather-city+.weather-city{border-top:1px solid var(--line);padding-top:6px}
+.weather-heading>small{font-size:9px;font-weight:400;color:var(--muted)}
+.source-detail{height:144px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.calendar-scroll{display:flex;flex:1;flex-direction:column;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.calendar-scroll .calendar-grid{flex:1 0 280px;min-height:280px}
+.month-panel{overflow:hidden}
+#detailHistory{max-height:300px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+dialog{overflow:hidden}
+dialog>.dialog-body{max-height:calc(92dvh - 160px);overflow-y:auto;overscroll-behavior:contain}
+@media(max-width:1150px){
+ .unified-board{overflow:hidden;min-height:0;padding:0}
+ .unified-board>.board-panel-tabs{position:static;flex:0 0 42px;min-height:42px}
+ .unified-board>.shared-main,.unified-board>.shared-files,.unified-board>.shared-main:has(.calendar-layout){flex:1 1 0;min-height:0;overflow:hidden}
+ .unified-board #viewBody,.unified-board .calendar-layout{height:100%;min-height:0}
+}
