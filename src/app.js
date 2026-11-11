@@ -10,7 +10,7 @@ import {historyForMonth} from './history.js';
 import {connectionFetch,createSessionCheck,withDeadline} from './connection.js';
 import sceneryURL from './assets/city-panorama-ai.webp';
 import './style.css';
-const APP_VERSION='2.7.1';
+const APP_VERSION='2.7.2';
 const demo=new URLSearchParams(location.search).get('demo')==='1';
 const db=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},global:{fetch:connectionFetch(fetch)}});
 const $=s=>document.querySelector(s), app=$('#app');
@@ -218,11 +218,11 @@ function sourceIndicator(){
 }
 function paintSourcePopup(){
  const popup=$('#sourcePopover');if(!popup)return;
- const groups=sourceGroups(),latest=state.runs[0];
+ const groups=sourceGroups();
  const selected=groups.find(g=>g.id===state.sourceSelected);
  const detail=selected?.records.map(r=>`${r.name} · ${r.label}\n확인 ${kstTime(r.checkedAt)}${r.lastSuccess&&r.status!=='ok'?' · 마지막 성공 '+kstTime(r.lastSuccess):''}\n${r.detail}`).join('\n\n')||'';
  const chunks=detail.match(/[\s\S]{1,180}/g)||[''];const detailPage=Math.min(state.sourceDetailPage,chunks.length-1);
- popup.innerHTML=`<div class="source-popup-head"><div><strong>자료 수집 상태</strong><small>${demo?'공개용 표시':latest?'수집 '+kstTime(latest.generated_at):'아직 수집 기록이 없습니다'}</small></div><button class="source-close" popovertarget="sourcePopover" popovertargetaction="hide" aria-label="수집 상태 닫기">×</button></div>${state.error||!navigator.onLine?'<p class="source-popup-warning">보드 연결을 확인하지 못해 이전 결과를 표시합니다.</p>':''}<div class="source-rows">${groups.map(g=>`<button class="source-row ${selected?.id===g.id?'selected':''}" data-source="${g.id}" aria-expanded="${selected?.id===g.id}">${sourceDot(g.status)}<span>${g.name}</span><b>${g.label}</b><span aria-hidden="true">›</span></button>`).join('')}</div>${selected?`<div class="source-detail"><p>${esc(chunks[detailPage])}</p>${chunks.length>1?`<div class="source-detail-pages"><button data-source-page="${detailPage-1}" ${detailPage===0?'disabled':''} aria-label="이전 상세">‹</button><small>${detailPage+1} / ${chunks.length}</small><button data-source-page="${detailPage+1}" ${detailPage===chunks.length-1?'disabled':''} aria-label="다음 상세">›</button></div>`:''}</div>`:'<p class="source-popup-hint">항목을 누르면 확인 시각과 누락 이유가 나옵니다.</p>'}<div class="source-legend">${[['ok','성공'],['partial','일부'],['failed','실패'],['not_checked','미조회']].map(([s,l])=>`<span>${sourceDot(s)}${l}</span>`).join('')}</div><p class="source-popup-foot">저장된 원본 조회 결과입니다. 보드 실시간 연결과는 별개입니다.</p>`;
+ popup.innerHTML=`<div class="source-popup-head"><div><strong>자료 수집 상태</strong><small>${demo?'공개용 표시':'원본별 마지막 수집 결과'}</small></div><button class="source-close" popovertarget="sourcePopover" popovertargetaction="hide" aria-label="수집 상태 닫기">×</button></div>${state.error||!navigator.onLine?'<p class="source-popup-warning">보드 연결을 확인하지 못해 이전 결과를 표시합니다.</p>':''}<div class="source-rows">${groups.map(g=>`<button class="source-row ${selected?.id===g.id?'selected':''}" data-source="${g.id}" aria-expanded="${selected?.id===g.id}">${sourceDot(g.status)}<span>${g.name}<small class="source-checked-at">${g.checkedAt?kstTime(g.checkedAt):'확인 시각 없음'}</small></span><b>${g.label}</b><span aria-hidden="true">›</span></button>`).join('')}</div>${selected?`<div class="source-detail"><p>${esc(chunks[detailPage])}</p>${chunks.length>1?`<div class="source-detail-pages"><button data-source-page="${detailPage-1}" ${detailPage===0?'disabled':''} aria-label="이전 상세">‹</button><small>${detailPage+1} / ${chunks.length}</small><button data-source-page="${detailPage+1}" ${detailPage===chunks.length-1?'disabled':''} aria-label="다음 상세">›</button></div>`:''}</div>`:'<p class="source-popup-hint">항목을 누르면 확인 시각과 누락 이유가 나옵니다.</p>'}<div class="source-legend">${[['ok','완료'],['partial','일부'],['failed','실패'],['not_checked','미조회']].map(([s,l])=>`<span>${sourceDot(s)}${l}</span>`).join('')}</div><p class="source-popup-foot">실제 수집 결과와 시각입니다. 새 수집 결과가 나오면 갱신하며, 다른 자료만 추가해도 유지됩니다.</p>`;
  popup.querySelectorAll('[data-source]').forEach(b=>b.onclick=()=>{state.sourceSelected=state.sourceSelected===b.dataset.source?null:b.dataset.source;state.sourceDetailPage=0;paintSourcePopup();popup.querySelector(`[data-source="${b.dataset.source}"]`)?.focus();});
  popup.querySelectorAll('[data-source-page]').forEach(b=>b.onclick=()=>{state.sourceDetailPage=+b.dataset.sourcePage;paintSourcePopup();});
 }

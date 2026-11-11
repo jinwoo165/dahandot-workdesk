@@ -9,7 +9,9 @@ const group=(rows,id,files=[],opts={})=>sourceHealth(rows,files,{now,...opts}).f
 test('all sources successful is green even if there are no new tasks',()=>{
  const groups=sourceHealth([run(complete())],[],{now});
  assert.equal(collectionSummary(groups).status,'ok');
+ assert.equal(collectionSummary(groups).label,'수집 완료');
  assert.ok(groups.every(g=>g.status==='ok'));
+ assert.ok(groups.every(g=>g.label==='수집 완료'&&g.checkedAt===checked));
 });
 test('latest failed result is red and retains the earlier success time',()=>{
  const old='2026-11-09T04:00:00Z';
@@ -18,11 +20,43 @@ test('latest failed result is red and retains the earlier success time',()=>{
  assert.equal(mail.status,'failed');assert.equal(mail.records[0].lastSuccess,old);
  assert.equal(collectionSummary(sourceHealth(rows,[],{now})).label,'일부 실패');
 });
-test('latest missing or not_checked source never inherits an older green result',()=>{
- const rows=[run([source('dooray-mail','not_checked')]),run(complete(),'2026-11-09T04:00:00Z')];
+test('an unrelated follow-up feed retains each source collection result and its actual time',()=>{
+ const rows=[run([source('meeting-notes')],'2026-11-10T04:20:00Z'),run(complete())];
+ const groups=sourceHealth(rows,[],{now});
+ assert.equal(collectionSummary(groups).label,'수집 완료');
+ assert.ok(groups.every(g=>g.checkedAt===checked));
+});
+test('a not-checked carry-forward with the same timestamp does not erase a completed collection',()=>{
+ const rows=[run(complete().map(s=>({...s,status:'not_checked'})),'2026-11-10T04:20:00Z'),run(complete())];
+ const groups=sourceHealth(rows,[],{now});
+ assert.equal(collectionSummary(groups).label,'수집 완료');
+ assert.ok(groups.every(g=>g.checkedAt===checked));
+});
+test('a newly recorded missed check overrides earlier success, while omitted sources remain unchanged',()=>{
+ const old='2026-11-10T00:00:00Z';
+ const rows=[run([source('dooray-mail','not_checked')]),run(complete().map(s=>({...s,checked_at:old})),old)];
  assert.equal(group(rows,'dooray-mail').status,'not_checked');
- assert.equal(group(rows,'dooray-calendar').status,'not_checked');
- assert.equal(group(rows,'dooray-calendar').records[0].checkedAt,null);
+ assert.equal(group(rows,'dooray-mail').records[0].lastSuccess,old);
+ assert.equal(group(rows,'dooray-calendar').status,'ok');
+ assert.equal(group(rows,'dooray-calendar').records[0].checkedAt,old);
+});
+test('an afternoon failure or partial result stays visible after a later unrelated update',()=>{
+ const morning='2026-11-09T23:00:00Z';
+ for(const status of ['failed','partial']){
+  const rows=[run([source('meeting-notes')],'2026-11-10T04:20:00Z'),run([source('dooray-mail',status)]),run(complete().map(s=>({...s,checked_at:morning})),morning)];
+  const mail=group(rows,'dooray-mail');
+  assert.equal(mail.status,status);assert.equal(mail.checkedAt,checked);assert.equal(mail.records[0].lastSuccess,morning);
+  assert.notEqual(collectionSummary(sourceHealth(rows,[],{now})).label,'수집 완료');
+ }
+});
+test('an older observation imported later cannot replace a newer failure',()=>{
+ const old='2026-11-10T00:00:00Z';
+ const rows=[run([source('dooray-mail','ok',old)],'2026-11-10T04:20:00Z'),run([source('dooray-mail','failed')])];
+ assert.equal(group(rows,'dooray-mail').status,'failed');
+});
+test('an unknown source still remains unchecked without inventing a collection time',()=>{
+ const mail=group([run([source('meeting-notes')])],'dooray-mail');
+ assert.equal(mail.status,'not_checked');assert.equal(mail.checkedAt,null);
 });
 test('both Google calendars are required and one failure is not hidden',()=>{
  assert.equal(group([run([source('google-primary')])],'google').status,'partial');

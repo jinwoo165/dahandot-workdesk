@@ -307,3 +307,5 @@ body{color:var(--text);background:var(--bg)}a,.text-btn{color:var(--green)}.pane
 
 /* Login stays available while a saved session is being recovered. */
 .login-feedback{font-size:12px;line-height:1.7;margin-top:16px;color:var(--muted);min-height:1.7em;overflow-wrap:anywhere}.login-retry{width:100%;margin:10px 0 14px}.login-retry[hidden]{display:none}
+
+.source-checked-at{display:block;font-size:9px;color:var(--muted);margin-top:3px;line-height:1.35}.source-row b{white-space:nowrap}
