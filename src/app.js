@@ -106,7 +106,8 @@ function loginFeedback(message='',retry=false){
  const node=$('#loginMessage');if(node&&!authActionBusy)node.textContent=message;
  const button=$('#retryConnection');if(button)button.hidden=!retry;
 }
-function connectionMessage(error){
+function connectionMessage(error,service='login'){
+ if(service==='workspace')return '로그인은 확인했지만 업무 저장소의 응답을 받지 못했습니다. 연결 다시 확인을 눌러주세요. 기존 업무와 메모는 그대로 보관되어 있습니다.';
  const message=error?.message||String(error||'');
  if(/Failed to fetch|fetch failed|NetworkError|Timeout|timed out|연결 응답 시간|AbortError/i.test(message))return '로그인 서버의 응답을 받지 못했습니다. 잠시 후 연결을 다시 확인하세요. 기존 업무와 메모는 그대로 보관되어 있습니다.';
  return '로그인을 확인하지 못했습니다. 연결을 다시 확인하거나 등록된 이메일로 로그인하세요.';
@@ -143,7 +144,7 @@ async function start(user){
   const {data,error}=await withDeadline(db.from('workspaces').select('*'));if(error)throw error;
   if(!data.length){login('이 계정에 연결된 업무보드가 없습니다. 등록된 이메일로 로그인하세요.');return;}
   state.workspace=data[0];await refresh(true);subscribe();
- }catch(error){login(connectionMessage(error));}
+ }catch(error){login(connectionMessage(error,'workspace'));}
  finally{starting=false;}
 }
 
