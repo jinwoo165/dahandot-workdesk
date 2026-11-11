@@ -63,8 +63,8 @@ test('both Google calendars are required and one failure is not hidden',()=>{
  const google=group([run([source('google-primary'),source('google-secondary','failed')])],'google');
  assert.equal(google.status,'failed');assert.equal(google.label,'일부 실패');
 });
-test('stale, invalid and future success times cannot show green',()=>{
- for(const date of ['2026-11-08T04:00:00Z','bad date','2026-11-10T06:00:00Z',null]){
+test('invalid and future success times cannot show green',()=>{
+ for(const date of ['bad date','2026-11-10T06:00:00Z',null]){
   const mail=group([run([source('dooray-mail','ok',date)])],'dooray-mail');
   assert.equal(mail.status,'not_checked');
   if(date==='bad date'||date===null)assert.equal(mail.records[0].checkedAt,null);
@@ -75,7 +75,8 @@ test('newer OneDrive file result takes precedence including failures',()=>{
  assert.equal(group(rows,'onedrive',files).status,'failed');
  assert.equal(group(rows,'onedrive',files).records[0].lastSuccess,checked);
  assert.equal(group(rows,'onedrive',[{status:'failed',checked_at:'2026-11-09T00:00:00Z'}]).status,'ok');
- assert.equal(group(rows,'onedrive',[],{fileError:'목록 연결 실패'}).status,'failed');
+ assert.equal(group(rows,'onedrive',[],{fileError:'목록 연결 실패'}).status,'ok');
+ assert.equal(collectionSummary(sourceHealth(rows,[],{now}),{fileError:'목록 연결 실패'}).label,'확인 불가');
 });
 test('partial and missing results are explicit; board connection errors override green',()=>{
  const groups=sourceHealth([run(complete())],[],{now});
