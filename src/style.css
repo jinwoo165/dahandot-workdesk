@@ -430,7 +430,7 @@ dialog>.dialog-body{max-height:calc(92dvh - 160px);overflow-y:auto;overscroll-be
 .has-work .shared-briefing .briefing-expanded{overflow:hidden}
 .briefing-content{display:flex;flex-direction:column;height:100%;min-height:0}
 .briefing-content .briefing-heading{flex-shrink:0}
-.briefing-expanded .briefing-lines{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;margin-bottom:0;padding-right:3px}
+.briefing-expanded .briefing-lines{flex:1;min-height:0;align-content:start;grid-auto-rows:max-content;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;margin-bottom:0;padding-right:3px}
 .briefing-expanded .briefing-lines li{display:flex;align-items:flex-start;gap:8px}
 .briefing-lines li>span{flex:1;min-width:0}
 .briefing-lines .briefing-line-action{flex-shrink:0;min-height:24px;min-width:24px;padding:0 4px;border-radius:4px;color:var(--muted);font-size:11px;line-height:24px}
