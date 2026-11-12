@@ -525,6 +525,34 @@ dialog>.dialog-body{max-height:calc(92dvh - 160px);overflow-y:auto;overscroll-be
 [data-theme=dark] .search-result mark{background:#53643b;color:#f1f5ce}
 .unified-search-panel .widget-alert{flex-shrink:0;margin:0;padding:8px 22px;line-height:1.5}
 .unified-search-panel .widget-alert button{margin-left:8px}
+
+/* Saved stories remain visible independently of task progress or message processing. */
+.story-badge{display:inline-flex;align-items:center;gap:4px;vertical-align:1px;margin-right:5px;padding:2px 6px;border-radius:5px;font-size:10px;line-height:1.5;font-weight:500;white-space:nowrap;color:var(--muted);background:transparent}
+.story-badge svg{width:13px;height:13px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:1.4}
+.story-badge.has-stories{color:var(--green);background:var(--soft);font-weight:650}
+.story-badge.has-stories svg{fill:currentColor;stroke:currentColor}
+.story-badge.no-stories{opacity:.8;padding-left:0}
+.timeline-item strong .story-badge{font-size:10px}
+.item-stories{padding:14px 16px;margin:0 0 22px;border:1px solid var(--line);border-radius:10px;background:var(--soft);line-height:1.65}
+.item-stories-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:7px}
+.item-stories-heading h3{font-size:13px;margin:0}
+.item-stories>small{font-size:11px;color:var(--muted)}
+.story-preview-copy{font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0}
+.story-preview-empty{font-size:12px;color:var(--muted);margin:6px 0}
+.item-stories .text-btn{font-size:12px;padding:5px 0;min-height:32px}
+.snapshot+.item-stories,.dialog-body>.badge+.item-stories{margin-top:16px}
+.story-thread-heading{border-top:1px solid var(--line);padding:17px 2px 8px}
+.story-thread-heading h3{font-size:14px;margin:0 0 5px}
+.story-thread-heading h3 span{font-weight:500;font-size:12px;color:var(--green);margin-left:5px}
+.story-thread-heading small{font-size:11px;color:var(--muted)}
+#conversationThread .conversation-list{padding-top:8px}
+.story-thread .conversation-turn{scroll-margin-top:12px}
+@media(max-width:900px){
+ .story-badge{font-size:10px;margin-right:3px;padding:1px 4px}
+ .story-badge svg{width:12px;height:12px}
+ .item-stories{padding:12px;margin-bottom:16px}
+ .item-stories .text-btn{min-height:40px}
+}
 @media(max-width:1200px){.search-result-grid{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:900px){
  .sidebar{height:104px;flex:0 0 104px;overflow:visible}

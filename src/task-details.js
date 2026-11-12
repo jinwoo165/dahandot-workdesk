@@ -38,17 +38,18 @@ export function sourceReferencesHTML(refs=[]){
  }).join('');
 }
 
-export function taskDetailContent(task){
+export function taskDetailContent(task,conversationHTML=''){
  const meta=[['프로젝트',task.project],['담당',task.owner_label],['마감',task.due_date?dateLabel(task.due_date):''],['다음 확인',task.next_review_on?dateLabel(task.next_review_on):'']].filter(([,value])=>value);
  const textSection=(title,text)=>text?`<section class="task-detail-section"><h3>${title}</h3><div class="linked-copy">${linkedText(text)}</div></section>`:'';
  return `<div class="task-detail-status"><span class="badge ${esc(task.status)}">${esc(statuses[task.status]||task.status)}</span>${task.archived?'<span class="badge">보관됨</span>':''}${task.pending_review?'<span class="badge review">원본 변경 확인 필요</span>':''}${task.source_data?.source_state==='cancelled'?'<span class="badge">원문에서 취소됨</span>':task.source_data?.source_state==='completed'?'<span class="badge">원문에서 완료됨</span>':''}</div>
  <h2 class="task-detail-title">${esc(task.title)}</h2>
+ ${conversationHTML}
  ${meta.length?`<dl class="task-detail-meta">${meta.map(([label,value])=>`<div><dt>${label}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl>`:''}
  ${textSection('다음 행동',task.next_action)}${textSection('남은 일',task.remaining_action)}${textSection('내 메모',task.note)}
  <section class="task-detail-section"><h3>근거 · 원문</h3><p class="task-source-help">원문을 누르면 전체 내용을 새 탭에서 볼 수 있습니다.</p>${sourceReferencesHTML(task.source_refs||[])}</section>`;
 }
 
-export function eventDetailContent(event){
+export function eventDetailContent(event,conversationHTML=''){
  const status={confirmed:'예정',tentative:'참석 확인 필요',cancelled:'취소됨'}[event.status]||'일정';
  let dates;
  if(event.all_day){
@@ -58,6 +59,7 @@ export function eventDetailContent(event){
  const meta=[...dates,['캘린더',event.source]].filter(([,value])=>value);
  return `<div class="task-detail-status"><span class="badge">${esc(status)}</span>${event.excluded?'<span class="badge">내 업무보드에서 제외됨</span>':event.personal_changed?'<span class="badge">내 일정 조정</span>':''}</div>
  <h2 class="task-detail-title">${esc(event.title)}</h2>
+ ${conversationHTML}
  <dl class="task-detail-meta">${meta.map(([label,value])=>`<div><dt>${label}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl>
  <section class="task-detail-section"><h3>내용</h3>${event.note?`<div class="linked-copy">${linkedText(event.note)}</div>`:'<p class="task-detail-empty">업무보드에 등록된 추가 내용이 없습니다.</p>'}</section>
  ${event.personal_note?`<section class="task-detail-section"><h3>내 메모</h3><div class="linked-copy">${linkedText(event.personal_note)}</div></section>`:''}
