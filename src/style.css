@@ -435,6 +435,10 @@ dialog>.dialog-body{max-height:calc(92dvh - 160px);overflow-y:auto;overscroll-be
 .weather-page-controls small{min-width:34px;text-align:center;font-size:10px;font-weight:400;color:var(--muted)}
 .weather-page .weather-heading{gap:4px;flex-shrink:0}
 .weather-page:focus-visible{outline:2px solid #8db9ac;outline-offset:-2px;border-radius:4px}
+@media(max-width:900px){
+ .weather-page{gap:1px}
+ .title-row .weather-page .weather-tomorrow{gap:1px}
+}
 .agenda-removable{position:relative}
 .unified-board .agenda-removable{padding-right:40px}
 .file-card .file-entry{padding-right:40px}

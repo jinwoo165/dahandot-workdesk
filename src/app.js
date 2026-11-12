@@ -14,7 +14,7 @@ import {normalizeBriefingLine,briefingItems,briefingListHTML} from './briefing.j
 import {itemVisibilityKey,hiddenItems,visibleFiles,visibleAgenda} from './item-visibility.js';
 import sceneryURL from './assets/city-panorama-ai.webp';
 import './style.css';
-const APP_VERSION='2.9.0';
+const APP_VERSION='2.9.1';
 const demo=new URLSearchParams(location.search).get('demo')==='1';
 let recoveryPending=recoveryFromURL(location.hash);
 const db=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},global:{fetch:connectionFetch(fetch)}});
