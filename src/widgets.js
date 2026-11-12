@@ -1,6 +1,14 @@
 import {day,addDays} from './model.js';
 
-export const WEATHER_CITIES=[{id:'cheonan',name:'천안',latitude:36.8151,longitude:127.1139},{id:'seoul',name:'서울',latitude:37.5665,longitude:126.9780}];
+export const WEATHER_CITIES=[
+ {id:'cheonan',name:'천안',latitude:36.8151,longitude:127.1139},
+ {id:'seoul',name:'서울',latitude:37.5665,longitude:126.9780},
+ {id:'pocheon',name:'포천',latitude:37.89444,longitude:127.19917},
+ {id:'gangwon',name:'강원(춘천)',latitude:37.88302,longitude:127.7289},
+ {id:'busan',name:'부산',latitude:35.10168,longitude:129.03004},
+ {id:'jeju',name:'제주도(제주시)',latitude:33.50972,longitude:126.52194}
+];
+export const weatherPageIndex=(page,step=0)=>Math.max(0,Math.min(WEATHER_CITIES.length-1,(Number.isInteger(page)?page:0)+step));
 export const weatherURL=city=>{const c=WEATHER_CITIES.find(c=>c.id===city);if(!c)throw Error('지원하지 않는 지역입니다.');return `https://api.open-meteo.com/v1/forecast?latitude=${c.latitude}&longitude=${c.longitude}&current=temperature_2m,weather_code,is_day&daily=weather_code,temperature_2m_min,temperature_2m_max,precipitation_probability_max&timezone=Asia%2FSeoul&forecast_days=2`;};
 const number=n=>typeof n==='number'&&Number.isFinite(n)?n:null;
 export const degrees=n=>number(n)===null?'—':Math.round(n)+'°';

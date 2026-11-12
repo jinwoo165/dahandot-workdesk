@@ -426,6 +426,29 @@ dialog>.dialog-body{max-height:calc(92dvh - 160px);overflow-y:auto;overscroll-be
 .agenda-open{display:block;width:100%;text-align:left;padding:0;min-height:0}
 .agenda-open:hover strong{text-decoration:underline;text-underline-offset:3px}
 
+/* Weather alone uses horizontal pages; the board lists retain vertical scrolling. */
+.weather-page{display:flex;flex-direction:column;justify-content:space-between;gap:3px;width:100%;height:100%;min-height:0;touch-action:pan-y;overflow:hidden}
+.weather-page-controls{display:flex;align-items:center;gap:3px;flex-shrink:0}
+.weather-page-controls button{min-height:24px;min-width:24px;padding:0 4px;line-height:22px;font-size:21px;border-radius:4px;color:var(--muted)}
+.weather-page-controls button:hover:not(:disabled){background:var(--soft);color:var(--green)}
+.weather-page-controls button:disabled{opacity:.3;cursor:default}
+.weather-page-controls small{min-width:34px;text-align:center;font-size:10px;font-weight:400;color:var(--muted)}
+.weather-page .weather-heading{gap:4px;flex-shrink:0}
+.weather-page:focus-visible{outline:2px solid #8db9ac;outline-offset:-2px;border-radius:4px}
+.agenda-removable{position:relative}
+.unified-board .agenda-removable{padding-right:40px}
+.file-card .file-entry{padding-right:40px}
+.item-dismiss{position:absolute;right:9px;top:8px;z-index:1;min-height:26px;min-width:26px;padding:0;font-size:19px;line-height:24px;color:var(--muted);border-radius:4px}
+.item-dismiss:hover,.item-restore:hover{background:var(--soft);color:var(--green)}
+.item-dismiss:focus-visible,.item-restore:focus-visible{outline:2px solid #8db9ac;outline-offset:-2px}
+.panel-corner-tools{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.file-check>[data-hidden-list]{flex-shrink:0}
+.file-check [data-hidden-list]{font-size:10px;white-space:nowrap}
+.visibility-hint{margin:0;padding:6px 14px;font-size:11px;line-height:1.6;color:var(--muted)}
+.hidden-item{display:flex;align-items:flex-start;gap:12px;padding:13px 14px;border-bottom:1px solid var(--line);font-size:13px;line-height:1.65}
+.hidden-item>span{flex:1;min-width:0;overflow-wrap:anywhere}
+.item-restore{flex-shrink:0;min-height:28px;padding:2px 5px;font-size:11px;color:var(--muted);border-radius:4px}
+
 /* Summary visibility is independent of task status and source collection. */
 .has-work .shared-briefing .briefing-expanded{overflow:hidden}
 .briefing-content{display:flex;flex-direction:column;height:100%;min-height:0}
