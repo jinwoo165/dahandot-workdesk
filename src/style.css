@@ -490,3 +490,60 @@ dialog>.dialog-body{max-height:calc(92dvh - 160px);overflow-y:auto;overscroll-be
  .unified-board>.shared-main,.unified-board>.shared-files,.unified-board>.shared-main:has(.calendar-layout){flex:1 1 0;min-height:0;overflow:hidden}
  .unified-board #viewBody,.unified-board .calendar-layout{height:100%;min-height:0}
 }
+
+/* One search across the private workspace, with readable matches. */
+.global-search{margin:4px 8px 5px;flex:0 0 auto;min-width:0}
+.global-search>label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin:0 0 7px 2px}
+.global-search-input{position:relative}
+.global-search-input>span{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:23px;color:var(--muted);pointer-events:none}
+.global-search input{width:100%;min-width:0;padding:10px 8px 10px 32px;font-size:12px;min-height:42px;border:1px solid var(--line);border-radius:9px;background:var(--soft);color:var(--text)}
+.global-search input:focus{outline:2px solid var(--green);outline-offset:2px}
+.unified-search-board{grid-template-columns:minmax(0,1fr);overflow:hidden}
+.unified-search-panel .panel-head{gap:12px;flex-shrink:0;padding:16px 22px}
+.unified-search-panel .panel-head h2{display:flex;align-items:center;gap:10px}
+.unified-search-panel .panel-head small{display:block;margin-top:6px;line-height:1.5;color:var(--muted)}
+.unified-search-panel .panel-head>.text-btn{white-space:nowrap}
+.search-total{font-size:12px;font-weight:500;color:var(--green);background:var(--soft);padding:4px 8px;border-radius:20px}
+.search-scope{display:flex;align-items:center;flex-wrap:wrap;gap:6px 14px;padding:10px 22px;border-bottom:1px solid var(--line);font-size:13px;flex:0 0 auto}
+.search-scope>span{font-weight:600;overflow-wrap:anywhere}
+.search-scope>small{font-size:11px;color:var(--muted)}
+.search-results{padding:4px 22px 24px}
+.search-group{padding-top:20px}
+.search-group>h3{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin:0 0 10px;line-height:1.6}
+.search-group>h3>span{font-size:11px;font-weight:500;color:var(--green)}
+.search-result-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.search-result{border:1px solid var(--line);border-radius:10px;overflow:hidden;min-width:0;display:flex;flex-direction:column}
+.search-result:focus-within,.search-result:hover{border-color:var(--green)}
+.search-result-meta{display:flex;flex-wrap:wrap;gap:5px 8px;align-items:center;padding:14px 16px 0;line-height:1.4}
+.search-result-meta small{font-size:11px;color:var(--muted);overflow-wrap:anywhere}
+.search-result-open{display:block;flex:1;text-align:left;width:100%;padding:10px 16px 15px;color:var(--text);background:transparent;line-height:1.65;min-width:0;overflow-wrap:anywhere}
+.search-result-open>strong{display:block;font-size:15px;margin-bottom:7px;font-weight:600}
+.search-result-open>strong>span{font-weight:400;color:var(--muted);white-space:nowrap}
+.search-result-open>p{font-size:13px;color:var(--muted);margin-top:5px;line-height:1.65}
+.search-field{font-size:11px;font-weight:600;color:var(--green);margin-right:8px}
+.search-result mark{background:#e9edba;color:#3a491d;border-radius:2px;padding:0 1px}
+[data-theme=dark] .search-result mark{background:#53643b;color:#f1f5ce}
+.unified-search-panel .widget-alert{flex-shrink:0;margin:0;padding:8px 22px;line-height:1.5}
+.unified-search-panel .widget-alert button{margin-left:8px}
+@media(max-width:1200px){.search-result-grid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:900px){
+ .sidebar{height:104px;flex:0 0 104px;overflow:visible}
+ .mobile-brand{height:55px;flex:0 0 55px}
+ .global-search{margin:0 12px 8px}
+ .global-search>label{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+ .global-search input{font-size:16px;min-height:40px;height:40px;padding-block:7px}
+ .unified-search-board{display:flex;min-height:0;overflow:hidden}
+ .unified-search-panel .panel-head{padding:12px;align-items:flex-start}
+ .unified-search-panel .panel-head h2{font-size:15px}
+ .unified-search-panel .panel-head small{font-size:10px;max-width:225px}
+ .unified-search-panel .panel-head>.text-btn{font-size:11px;min-height:36px}
+ .search-scope{padding:8px 12px;gap:4px 8px;font-size:12px}
+ .search-scope>small{font-size:10px}
+ .search-results{padding:0 12px 16px}
+ .search-group{padding-top:14px}
+ .search-result-meta{padding:11px 12px 0}
+ .search-result-open{padding:8px 12px 12px}
+ .search-result-open>strong{font-size:14px}
+ .search-result-open>p{font-size:12px}
+ .unified-search-panel .widget-alert{font-size:11px;padding:6px 12px}
+}
