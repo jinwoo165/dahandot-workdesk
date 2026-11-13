@@ -17,7 +17,7 @@ import {searchWorkdesk,highlightSearch,latestSearchFiles,searchFileKey} from './
 import sceneryURL from './assets/city-panorama-ai.webp';
 import {workProgress,progressCard} from './work-progress.js';
 import './style.css';
-const APP_VERSION='2.12.0';
+const APP_VERSION='2.12.1';
 const demo=new URLSearchParams(location.search).get('demo')==='1';
 let recoveryPending=recoveryFromURL(location.hash);
 const db=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},global:{fetch:connectionFetch(fetch)}});
