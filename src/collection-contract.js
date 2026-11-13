@@ -5,7 +5,7 @@ export const REQUIRED_CHECKS = {
  'dooray-calendar':['listing','details'],
  'google-primary':['listing'],
  'google-secondary':['listing'],
- 'onedrive-files':['modified_search','created_search','folder_listing','metadata']
+ 'onedrive-files':['folder_listing','metadata']
 };
 export const CHECK_LABELS = {listing:'목록 전체',content:'필요한 본문',attachments:'필요한 첨부',favorites:'즐겨찾기 목록',history:'기간 내 대화',details:'필요한 일정 상세',modified_search:'수정 파일 검색',created_search:'생성 파일 검색',folder_listing:'지정 폴더',metadata:'파일 정보'};
 export function completedChecks(sourceId,checks={}){
@@ -35,3 +35,4 @@ export function overdueCollection(record,now=Date.now()){
  const date=new Date(due+9*3600000),weekday=date.getUTCDay();
  return weekday!==0&&weekday!==6&&now>due+30*60000;
 }
+

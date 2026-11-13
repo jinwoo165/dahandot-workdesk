@@ -49,3 +49,12 @@ test('a holiday/weekend gap does not erase the last result on a 36-hour timer',(
 test('unknown holiday status cannot silently invent a missed scheduled run',()=>{
  assert.equal(overdueCollection({...report(),next_expected_at:'2026-11-11T13:00:00+09:00'},Date.parse('2026-11-11T15:00:00+09:00')),false);
 });
+
+test('designated OneDrive scope needs only folder listing and exact metadata',()=>{
+ const r=report('onedrive-files');r.file_batch_id='files';delete r.feed_batch_id;
+ assert.deepEqual(Object.keys(r.checks),['folder_listing','metadata']);assert.equal(verifiedCompletion(r),true);
+ delete r.checks.metadata;assert.equal(verifiedCompletion(r),false);
+});
+test('scope change never promotes historical partial or failed results',()=>{
+ for(const status of ['partial','failed']){const r={...report('onedrive-files'),status};assert.equal(verifiedCompletion(r),false);assert.equal(sourceHealth([],[],{now,results:[r]}).find(g=>g.id==='onedrive').status,status);}
+});
