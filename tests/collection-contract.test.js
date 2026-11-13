@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {REQUIRED_CHECKS,verifiedCompletion,overdueCollection} from '../src/collection-contract.js';
+import {REQUIRED_CHECKS,verifiedCompletion,overdueCollection,collectionDetail} from '../src/collection-contract.js';
 import {sourceHealth,collectionSummary} from '../src/source-health.js';
 const at='2026-11-11T08:00:00+09:00',now=Date.parse('2026-11-11T10:00:00+09:00');
 const report=(source_id='dooray-mail')=>({source_id,status:'ok',run_id:'example',checked_at:at,
@@ -11,13 +11,13 @@ test('scope limitations do not make a fully verified supported search incomplete
  const r=report('onedrive-files');r.scope.limitations=['검색 지원 형식만 대상'];r.file_batch_id='example-files';delete r.feed_batch_id;
  assert.equal(verifiedCompletion(r),true);
 });
-test('missing required body, attachment, page, or saved feed prevents completion',()=>{
- for(const change of [r=>delete r.checks.attachments,r=>r.checks.content.complete=false,r=>r.checks.listing.expected=1,r=>delete r.verified_at,r=>r.verified_at='invalid',r=>delete r.feed_batch_id,r=>r.missing.push({target:'본문',reason:'접근 실패'})]){
+test('missing required body, page, or saved feed prevents completion',()=>{
+ for(const change of [r=>delete r.checks.content,r=>r.checks.content.complete=false,r=>r.checks.listing.expected=1,r=>delete r.verified_at,r=>r.verified_at='invalid',r=>delete r.feed_batch_id,r=>r.missing.push({target:'본문',reason:'접근 실패'})]){
   const r=report();change(r);assert.equal(verifiedCompletion(r),false);
  }
 });
 test('unverified scope is never promoted because legacy status says ok',()=>{
- const r=report();delete r.checks.attachments;
+ const r=report();delete r.checks.content;
  const mail=sourceHealth([],[],{now,results:[r]}).find(g=>g.id==='dooray-mail');
  assert.equal(mail.status,'partial');assert.equal(mail.label,'수집 미완료');
  assert.equal(mail.records[0].lastSuccess,null);
@@ -58,3 +58,19 @@ test('designated OneDrive scope needs only folder listing and exact metadata',()
 test('scope change never promotes historical partial or failed results',()=>{
  for(const status of ['partial','failed']){const r={...report('onedrive-files'),status};assert.equal(verifiedCompletion(r),false);assert.equal(sourceHealth([],[],{now,results:[r]}).find(g=>g.id==='onedrive').status,status);}
 });
+
+for(const source of ['dooray-mail','dooray-favorites']){
+ test(`${source} complete body coverage is complete without attachment coverage`,()=>{
+ const r=report(source);r.checks.attachments={expected:2,checked:1,complete:false,reason:'첨부 하나 열람 불가'};r.scope.limitations=['별첨.pdf: 열람 불가'];
+ assert.equal(verifiedCompletion(r),true);assert.match(collectionDetail(r),/첨부 확인\(수집 완료와 별도\)/);assert.match(collectionDetail(r),/별첨.pdf/);
+ assert.equal(sourceHealth([],[],{now,results:[r]}).find(g=>g.id===source).status,'ok');
+ });
+ test(`${source} does not retroactively promote a partial record`,()=>{
+ const r={...report(source),status:'partial'};r.checks.attachments={expected:2,checked:1,complete:false};
+ assert.equal(verifiedCompletion(r),false);assert.equal(sourceHealth([],[],{now,results:[r]}).find(g=>g.id===source).status,'partial');
+ });
+ test(`${source} unread body remains incomplete even with all attachments read`,()=>{
+ const r=report(source);r.checks[source==='dooray-mail'?'content':'history'].complete=false;r.checks.attachments={expected:1,checked:1,complete:true};
+ assert.equal(verifiedCompletion(r),false);
+ });
+}

@@ -1,7 +1,7 @@
 // Completion is a verified observation of an agreed scope, not an unlimited crawl.
 export const REQUIRED_CHECKS = {
- 'dooray-mail':['listing','content','attachments'],
- 'dooray-favorites':['favorites','history','attachments'],
+ 'dooray-mail':['listing','content'],
+ 'dooray-favorites':['favorites','history'],
  'dooray-calendar':['listing','details'],
  'google-primary':['listing'],
  'google-secondary':['listing'],
@@ -24,6 +24,7 @@ export function collectionDetail(record){
  const parts=[record.detail||'',record.scope?.description?'수집 범위 · '+record.scope.description:''];
  if(record.scope?.from&&record.scope?.to)parts.push('기간 · '+record.scope.from+' ~ '+record.scope.to);
  for(const key of REQUIRED_CHECKS[record.source_id]||[]){const c=record.checks?.[key];if(c)parts.push(`${CHECK_LABELS[key]} · ${c.checked??'미확인'} / ${c.expected??'미확인'}${c.complete?' 확인':' 미완료'}${c.reason?' · '+c.reason:''}`);}
+ if(['dooray-mail','dooray-favorites'].includes(record.source_id)){const c=record.checks?.attachments;if(c)parts.push(`첨부 확인(수집 완료와 별도) · ${c.checked??'미확인'} / ${c.expected??'미확인'}${c.complete?' 확인':' 일부 미확인'}${c.reason?' · '+c.reason:''}`);}
  for(const m of record.missing||[])parts.push('남은 확인 · '+m.target+' — '+m.reason);
  if(record.scope?.limitations?.length)parts.push('지원 범위 안내 · '+record.scope.limitations.join(' / '));
  return parts.filter(Boolean).join('\n');

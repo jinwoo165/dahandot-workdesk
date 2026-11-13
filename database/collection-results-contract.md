@@ -18,8 +18,8 @@ After ingesting a feed and reading the stored result back, the operator calls `r
 
 | Source | Required check keys |
 | --- | --- |
-| `dooray-mail` | `listing`, `content`, `attachments` |
-| `dooray-favorites` | `favorites`, `history`, `attachments` |
+| `dooray-mail` | `listing`, `content` |
+| `dooray-favorites` | `favorites`, `history` |
 | `dooray-calendar` | `listing`, `details` |
 | `google-primary`, `google-secondary` | `listing` |
 | `onedrive-files` | `folder_listing`, `metadata` |
@@ -34,3 +34,6 @@ The RPC preserves the last success when a newer attempt fails; it ignores older 
 
 After calling the RPC, read `source_collection_results` back and verify `run_id`, `status`, `verified_at`, `checks`, and `missing`. No browser role can write results or call the RPC. The migration grants owner-scoped SELECT only and adds Realtime notifications.
 
+
+## 2026-11-13 Dooray body-first completion
+For mail and favorites, complete authorized listing/body coverage plus verified persistence determines collection completion. Attachment review is best-effort and does not independently block completion, whether inaccessible or not yet reviewed. Keep actual attachment counts under optional `checks.attachments`; disclose file names/reasons under `scope.limitations` and `detail`. Do not put attachment-only gaps in required `missing`, invent read counts, or infer unread attachment contents. Required unread body/history or failed persistence still prevents completion. Historical partial/failed observations are never promoted solely by the policy change. Apply `dooray-body-completion.sql` after `onedrive-scoped-completion.sql`; ACLs remain unchanged.
