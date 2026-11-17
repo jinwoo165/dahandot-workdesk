@@ -17,7 +17,7 @@ import {searchWorkdesk,highlightSearch,latestSearchFiles,searchFileKey} from './
 import sceneryURL from './assets/city-panorama-ai.webp';
 import {workProgress,progressCard} from './work-progress.js';
 import './style.css';
-const APP_VERSION='2.12.1';
+const APP_VERSION='2.12.2';
 const demo=new URLSearchParams(location.search).get('demo')==='1';
 let recoveryPending=recoveryFromURL(location.hash);
 const db=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},global:{fetch:connectionFetch(fetch)}});
@@ -109,7 +109,7 @@ function bindGlobalSearch(){
 function weatherWidget(){
  const page=weatherPageIndex(state.weatherPage),city=WEATHER_CITIES[page];
  const cached=state.weather[city.id],w=cached?.days?.[0]?.date===day()?cached:null,error=state.weatherErrors[city.id];
- const header=`<div class="weather-heading"><span>${city.name} 날씨</span><div class="weather-page-controls" aria-label="날씨 페이지 선택"><button data-weather-step="-1" aria-label="이전 지역 날씨" title="${page?WEATHER_CITIES[page-1].name:'첫 페이지'}" ${page===0?'disabled':''}>‹</button><small aria-live="polite">${page+1} / ${WEATHER_CITIES.length}</small><button data-weather-step="1" aria-label="다음 지역 날씨" title="${page<WEATHER_CITIES.length-1?WEATHER_CITIES[page+1].name:'마지막 페이지'}" ${page===WEATHER_CITIES.length-1?'disabled':''}>›</button></div></div>`;
+ const header=`<div class="weather-heading"><span>${city.name} 날씨 <button class="weather-refresh" data-weather-retry aria-label="날씨만 새로고침" title="6개 지역 날씨만 새로고침" ${state.weatherBusy?'disabled':''}>${state.weatherBusy?'…':'⟳'}</button></span><div class="weather-page-controls" aria-label="날씨 페이지 선택"><button data-weather-step="-1" aria-label="이전 지역 날씨" title="${page?WEATHER_CITIES[page-1].name:'첫 페이지'}" ${page===0?'disabled':''}>‹</button><small aria-live="polite">${page+1} / ${WEATHER_CITIES.length}</small><button data-weather-step="1" aria-label="다음 지역 날씨" title="${page<WEATHER_CITIES.length-1?WEATHER_CITIES[page+1].name:'마지막 페이지'}" ${page===WEATHER_CITIES.length-1?'disabled':''}>›</button></div></div>`;
  let body;
  if(!w)body=`<div class="weather-empty">${error?'날씨를 불러오지 못했습니다.':'오늘·내일 예보를 확인하고 있습니다…'}${error?'<button class="text-btn" data-weather-retry>다시 확인</button>':''}</div>`;
  else{
@@ -133,12 +133,13 @@ function bindWeather(){
  page.onpointerup=e=>{if(!start)return;const dx=e.clientX-start.x,dy=e.clientY-start.y;start=null;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.3)changeWeatherPage(dx<0?1:-1);};
 }
 async function updateWeather(force=false){
- const dateChanged=Object.values(state.weather).some(w=>w.days[0].date!==day());
- if(!state.workspace||state.weatherBusy||(!force&&!dateChanged&&Date.now()-weatherAttempt<1800000))return;
+ if(!state.workspace||state.weatherBusy||(!force&&weatherAttempt))return;
  weatherAttempt=Date.now();state.weatherBusy=true;
+ const busyWidget=$('#weatherWidget');if(busyWidget){busyWidget.innerHTML=weatherWidget();bindWeather();}
  const results=await Promise.allSettled(WEATHER_CITIES.map(c=>fetchWeather(fetch,new Date(),c.id)));
  results.forEach((r,i)=>{const id=WEATHER_CITIES[i].id;if(r.status==='fulfilled'){state.weather[id]=r.value;delete state.weatherErrors[id];}else state.weatherErrors[id]=r.reason?.message||'연결 실패';});
  state.weatherBusy=false;const widget=$('#weatherWidget');if(widget){widget.innerHTML=weatherWidget();bindWeather();}
+ if(force)toast(results.every(r=>r.status==='fulfilled')?'날씨를 새로고침했습니다.':'일부 지역 날씨를 불러오지 못했습니다. 다시 시도해 주세요.');
 }
 async function loadItemVisibility(){
  try{state.itemVisibility=await rows('workdesk_item_visibility',q=>q.eq('workspace_id',state.workspace.id).order('kind').order('drive_id').order('item_id'));state.itemVisibilityError='';}
@@ -355,8 +356,20 @@ function paintSourcePopup(){
  const groups=sourceGroups();
  const selected=groups.find(g=>g.id===state.sourceSelected);
  const detail=selected?.records.map(r=>`${r.name} · ${r.label}\n확인 ${kstTime(r.checkedAt)}${r.lastSuccess&&r.status!=='ok'?' · 마지막 성공 '+kstTime(r.lastSuccess):''}\n${r.detail}`).join('\n\n')||'';
- popup.innerHTML=`<div class="source-popup-head"><div><strong>자료 수집 상태</strong><small>${demo?'공개용 표시':'원본별 마지막 수집 결과'}</small></div><button class="source-close" popovertarget="sourcePopover" popovertargetaction="hide" aria-label="수집 상태 닫기">×</button></div>${state.error||state.fileError||state.collectionError||!navigator.onLine?'<p class="source-popup-warning">최신 수집 기록을 불러오지 못해 이전 결과를 표시합니다.</p>':''}<div class="source-rows">${groups.map(g=>`<button class="source-row ${selected?.id===g.id?'selected':''}" data-source="${g.id}" aria-expanded="${selected?.id===g.id}">${sourceDot(g.status)}<span>${g.name}<small class="source-checked-at">${g.checkedAt?kstTime(g.checkedAt):'확인 시각 없음'}</small></span><b>${g.label}</b><span aria-hidden="true">›</span></button>`).join('')}</div>${selected?`<div class="source-detail" data-scroll-key="${esc(JSON.stringify(['source-detail',selected.id]))}" tabindex="0" role="region" aria-label="수집 상세 스크롤"><p>${esc(detail)}</p></div>`:'<p class="source-popup-hint">항목을 누르면 확인 시각과 누락 이유가 나옵니다.</p>'}<div class="source-legend">${[['ok','완료'],['partial','미완료'],['failed','실패'],['not_checked','기록 없음']].map(([s,l])=>`<span>${sourceDot(s)}${l}</span>`).join('')}</div><p class="source-popup-foot">정해진 범위 확인과 저장 검증을 마치면 수집 완료입니다. 검색 지원 범위와 문서 요약은 별도로 확인합니다.</p>`;
+ popup.innerHTML=`<div class="source-popup-head"><div><strong>자료 수집 상태</strong><small>${demo?'공개용 표시':'원본별 마지막 수집 결과'}</small></div><button class="source-close" popovertarget="sourcePopover" popovertargetaction="hide" aria-label="수집 상태 닫기">×</button></div>${state.error||state.fileError||state.collectionError||!navigator.onLine?'<p class="source-popup-warning">최신 수집 기록을 불러오지 못해 이전 결과를 표시합니다.</p>':''}<div class="source-rows">${groups.map(g=>`<div class="source-row-with-refresh"><button class="source-row ${selected?.id===g.id?'selected':''}" data-source="${g.id}" aria-expanded="${selected?.id===g.id}">${sourceDot(g.status)}<span>${g.name}<small class="source-checked-at">${g.checkedAt?kstTime(g.checkedAt):'확인 시각 없음'}</small></span><b>${g.label}</b><span aria-hidden="true">›</span></button><button class="source-refresh" data-source-refresh="${g.id}" aria-label="${g.name} 갱신 요청" title="${g.name}만 갱신 요청">⟳<small>요청</small></button></div>`).join('')}</div>${selected?`<div class="source-detail" data-scroll-key="${esc(JSON.stringify(['source-detail',selected.id]))}" tabindex="0" role="region" aria-label="수집 상세 스크롤"><p>${esc(detail)}</p></div>`:'<p class="source-popup-hint">항목을 누르면 확인 시각과 누락 이유가 나옵니다.</p>'}<div class="source-legend">${[['ok','완료'],['partial','미완료'],['failed','실패'],['not_checked','기록 없음']].map(([s,l])=>`<span>${sourceDot(s)}${l}</span>`).join('')}</div><p class="source-popup-foot">정해진 범위 확인과 저장 검증을 마치면 수집 완료입니다. 검색 지원 범위와 문서 요약은 별도로 확인합니다.</p>`;
+ popup.querySelectorAll('[data-source-refresh]').forEach(b=>b.onclick=()=>requestSourceRefresh(b.dataset.sourceRefresh));
  popup.querySelectorAll('[data-source]').forEach(b=>b.onclick=()=>{state.sourceSelected=state.sourceSelected===b.dataset.source?null:b.dataset.source;paintSourcePopup();popup.querySelector(`[data-source="${b.dataset.source}"]`)?.focus();});
+}
+function requestSourceRefresh(id){
+ const group=sourceGroups().find(g=>g.id===id);if(!group)return;
+ if(demo){toast('체험 화면입니다. 실제 자료 수집은 실행하지 않습니다.');return;}
+ $('#sourcePopover')?.hidePopover();
+ const prompt=`내 업무보드 https://jinwoo165.github.io/dahandot-workdesk/ 에서 ${group.name}만 지금 원본을 다시 수집하고 반영해줘. 기존 승인된 수집 범위와 업무 처리 규칙을 유지하고 다른 자료는 갱신하지 마. 연결 실패 시 원인과 필요한 로그인 조치를 확인하고, 실제 저장 검증 후에만 수집 상태와 시각을 갱신해줘.`;
+ const dialog=$('#historyDetail');
+ dialog.innerHTML=`<div class="dialog-head"><h2>${esc(group.name)} 갱신 요청</h2><button class="icon-btn" id="closeSourceRequest" aria-label="닫기">×</button></div><div class="dialog-body"><p>현재 보드에서는 원본 수집을 직접 실행할 수 없습니다. 아래 요청을 복사해서 ChatGPT에 보내면 이 자료만 수집할 수 있습니다.</p><textarea id="sourceRequestText" rows="6" readonly aria-label="자료 갱신 요청 내용">${esc(prompt)}</textarea><p class="form-note">아직 수집을 시작하지 않았습니다. 실제 수집 결과가 저장되면 보드에 반영됩니다.</p></div><div class="dialog-foot"><button class="btn" id="copySourceRequest">요청 복사</button><a class="btn primary" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">ChatGPT 열기 ↗</a></div>`;
+ $('#closeSourceRequest').onclick=()=>dialog.close();
+ $('#copySourceRequest').onclick=async()=>{try{await navigator.clipboard.writeText(prompt);$('#copySourceRequest').textContent='복사했습니다';}catch{$('#sourceRequestText').select();$('#copySourceRequest').textContent='선택된 요청을 복사해 주세요';}};
+ dialog.showModal();
 }
 function bindSourcePopup(open=false){
  const popup=$('#sourcePopover'),button=$('#sourceStatusButton');paintSourcePopup();

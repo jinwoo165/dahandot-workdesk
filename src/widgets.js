@@ -35,7 +35,7 @@ export function parseWeather(data,now=new Date()){
  return {days,current,fetchedAt:new Date(now).toISOString()};
 }
 export async function fetchWeather(fetcher=fetch,now=new Date(),city='cheonan'){
- const response=await fetcher(weatherURL(city),{signal:AbortSignal.timeout(10000),credentials:'omit',referrerPolicy:'no-referrer'});
+ const response=await fetcher(weatherURL(city),{cache:'no-store',signal:AbortSignal.timeout(10000),credentials:'omit',referrerPolicy:'no-referrer'});
  if(!response.ok)throw Error('날씨 서비스에 연결하지 못했습니다.');
  return parseWeather(await response.json(),now);
 }
