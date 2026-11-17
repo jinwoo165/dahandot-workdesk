@@ -591,7 +591,7 @@ dialog>.dialog-body{max-height:calc(92dvh - 160px);overflow-y:auto;overscroll-be
 .weather-refresh{border:0;background:transparent;color:var(--green);font-size:17px;padding:0 4px;min-width:25px;min-height:25px;vertical-align:middle;cursor:pointer}
 .weather-refresh:disabled{opacity:.5;cursor:wait}
 .source-row-with-refresh{display:flex;align-items:center;gap:4px}.source-row-with-refresh .source-row{flex:1;min-width:0}
-.source-refresh{flex:0 0 34px;border:1px solid var(--line);border-radius:7px;background:var(--surface);color:var(--green);padding:4px 2px;font-size:17px;cursor:pointer}.source-refresh small{display:block;font-size:9px}
+.source-refresh{display:inline-flex;align-items:center;justify-content:center;gap:3px;flex:0 0 auto;width:auto;min-width:46px;height:26px;min-height:26px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--green);padding:0 6px;font-size:14px;line-height:1;white-space:nowrap;word-break:keep-all;cursor:pointer}.source-refresh small{display:inline;font-size:10px;line-height:1;white-space:nowrap}.source-refresh:hover{background:var(--soft)}
 #sourceRequestText{width:100%;margin-top:12px;resize:vertical;line-height:1.6}
 
 .weather-refresh.is-loading{animation:weather-refresh-spin 1s linear infinite}.weather-empty>span{min-width:0;font-size:11px}.weather-credit .weather-refresh{margin-left:auto;margin-right:6px;min-height:22px;line-height:1;padding:0 3px}.weather-credit{align-items:center}@keyframes weather-refresh-spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.weather-refresh.is-loading{animation:none}}
