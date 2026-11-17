@@ -39,6 +39,27 @@ export async function fetchWeather(fetcher=fetch,now=new Date(),city='cheonan'){
  if(!response.ok)throw Error('날씨 서비스에 연결하지 못했습니다.');
  return parseWeather(await response.json(),now);
 }
+// One request updates the whole weather card; each city's payload stays independent.
+export async function fetchAllWeather(fetcher=fetch,now=new Date(),timeoutMs=15000){
+ const url=new URL(weatherURL('cheonan'));
+ url.searchParams.set('latitude',WEATHER_CITIES.map(c=>c.latitude).join(','));
+ url.searchParams.set('longitude',WEATHER_CITIES.map(c=>c.longitude).join(','));
+ let payload;
+ for(let attempt=0;attempt<2;attempt++){
+  const controller=new AbortController();let timer;
+  try{
+   payload=await Promise.race([(async()=>{
+    const response=await fetcher(url.href,{cache:'no-store',signal:controller.signal,credentials:'omit',referrerPolicy:'no-referrer'});
+    if(!response.ok)throw Error('날씨 서비스 연결 실패');
+    return response.json();
+   })(),new Promise((_,reject)=>{timer=setTimeout(()=>{controller.abort();reject(Error('날씨 서비스 응답 지연'));},timeoutMs);})]);
+   break;
+  }catch(error){if(attempt===1)throw error;}
+  finally{clearTimeout(timer);}
+ }
+ if(!Array.isArray(payload)||payload.length!==WEATHER_CITIES.length)throw Error('지역별 날씨 응답을 확인하지 못했습니다.');
+ return payload.map(data=>{try{return {status:'fulfilled',value:parseWeather(data,now)};}catch(reason){return {status:'rejected',reason};}});
+}
 export const RECENT_FILES_LIMIT=30;
 // Show up to 30 latest files after deduplication. Earlier changes remain stored.
 export function recentFiles(items,now=new Date()){

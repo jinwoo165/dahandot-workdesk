@@ -593,3 +593,5 @@ dialog>.dialog-body{max-height:calc(92dvh - 160px);overflow-y:auto;overscroll-be
 .source-row-with-refresh{display:flex;align-items:center;gap:4px}.source-row-with-refresh .source-row{flex:1;min-width:0}
 .source-refresh{flex:0 0 34px;border:1px solid var(--line);border-radius:7px;background:var(--surface);color:var(--green);padding:4px 2px;font-size:17px;cursor:pointer}.source-refresh small{display:block;font-size:9px}
 #sourceRequestText{width:100%;margin-top:12px;resize:vertical;line-height:1.6}
+
+.weather-refresh.is-loading{animation:weather-refresh-spin 1s linear infinite}.weather-empty>span{min-width:0;font-size:11px}.weather-credit .weather-refresh{margin-left:auto;margin-right:6px;min-height:22px;line-height:1;padding:0 3px}.weather-credit{align-items:center}@keyframes weather-refresh-spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.weather-refresh.is-loading{animation:none}}

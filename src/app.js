@@ -3,7 +3,7 @@ import {SUPABASE_URL,SUPABASE_KEY,LOGIN_CONFIGURED} from './config.js';
 import {statuses,day,addDays,monthBounds,kstTime,escapeHTML as esc,safeURL,needsAttention,matchesTask,eventOnDay,currentBriefing,dateLabel,upcomingEvents} from './model.js';
 import {messageStatuses,validateMessage,messagesForTarget,mergeCalendarOverrides,mergeSavedMessages,persistConversation} from './conversations.js';
 import {conversationBadge,conversationPreview,conversationThread} from './conversation-ui.js';
-import {WEATHER_CITIES,weatherPageIndex,degrees,weatherDescription,fetchWeather,RECENT_FILES_LIMIT,fileKind} from './widgets.js';
+import {WEATHER_CITIES,weatherPageIndex,degrees,weatherDescription,fetchAllWeather,RECENT_FILES_LIMIT,fileKind} from './widgets.js';
 import {sourceHealth,collectionSummary} from './source-health.js';
 import {summaryForFile} from './file-summaries.js';
 import {TASK_FILTERS,taskFilterCounts} from './task-filters.js';
@@ -17,7 +17,7 @@ import {searchWorkdesk,highlightSearch,latestSearchFiles,searchFileKey} from './
 import sceneryURL from './assets/city-panorama-ai.webp';
 import {workProgress,progressCard} from './work-progress.js';
 import './style.css';
-const APP_VERSION='2.12.2';
+const APP_VERSION='2.12.3';
 const demo=new URLSearchParams(location.search).get('demo')==='1';
 let recoveryPending=recoveryFromURL(location.hash);
 const db=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},global:{fetch:connectionFetch(fetch)}});
@@ -109,12 +109,13 @@ function bindGlobalSearch(){
 function weatherWidget(){
  const page=weatherPageIndex(state.weatherPage),city=WEATHER_CITIES[page];
  const cached=state.weather[city.id],w=cached?.days?.[0]?.date===day()?cached:null,error=state.weatherErrors[city.id];
- const header=`<div class="weather-heading"><span>${city.name} 날씨 <button class="weather-refresh" data-weather-retry aria-label="날씨만 새로고침" title="6개 지역 날씨만 새로고침" ${state.weatherBusy?'disabled':''}>${state.weatherBusy?'…':'⟳'}</button></span><div class="weather-page-controls" aria-label="날씨 페이지 선택"><button data-weather-step="-1" aria-label="이전 지역 날씨" title="${page?WEATHER_CITIES[page-1].name:'첫 페이지'}" ${page===0?'disabled':''}>‹</button><small aria-live="polite">${page+1} / ${WEATHER_CITIES.length}</small><button data-weather-step="1" aria-label="다음 지역 날씨" title="${page<WEATHER_CITIES.length-1?WEATHER_CITIES[page+1].name:'마지막 페이지'}" ${page===WEATHER_CITIES.length-1?'disabled':''}>›</button></div></div>`;
+ const header=`<div class="weather-heading"><span>${city.name} 날씨</span><div class="weather-page-controls" aria-label="날씨 페이지 선택"><button data-weather-step="-1" aria-label="이전 지역 날씨" title="${page?WEATHER_CITIES[page-1].name:'첫 페이지'}" ${page===0?'disabled':''}>‹</button><small aria-live="polite">${page+1} / ${WEATHER_CITIES.length}</small><button data-weather-step="1" aria-label="다음 지역 날씨" title="${page<WEATHER_CITIES.length-1?WEATHER_CITIES[page+1].name:'마지막 페이지'}" ${page===WEATHER_CITIES.length-1?'disabled':''}>›</button></div></div>`;
  let body;
- if(!w)body=`<div class="weather-empty">${error?'날씨를 불러오지 못했습니다.':'오늘·내일 예보를 확인하고 있습니다…'}${error?'<button class="text-btn" data-weather-retry>다시 확인</button>':''}</div>`;
+ const refreshControl=`<button class="weather-refresh ${state.weatherBusy?'is-loading':''}" data-weather-retry aria-label="전체 지역 날씨 새로고침" title="6개 지역 날씨 전체 새로고침" ${state.weatherBusy?'disabled':''}>⟳</button>`;
+ if(!w)body=`<div class="weather-empty"><span role="status">${state.weatherBusy?'전체 지역 날씨 갱신 중…':error?'날씨 연결 실패 · 다시 눌러주세요.':'날씨를 확인해 주세요.'}</span>${refreshControl}</div>`;
  else{
   const today=w.days[0],tomorrow=w.days[1],now=weatherDescription(w.current?.code??today.code,w.current?.isDay??true),next=weatherDescription(tomorrow.code);
-  body=`<div class="weather-content"><div class="weather-now"><span class="weather-symbol" aria-hidden="true">${now.icon}</span><div><strong>${degrees(w.current?.temperature)}</strong><span>오늘 · ${now.label}</span></div><div class="weather-range"><span>최고 ${degrees(today.max)}</span><span>최저 ${degrees(today.min)}</span></div></div><div class="weather-tomorrow"><span><span aria-hidden="true">${next.icon}</span> 내일 · ${next.label}</span><b>${degrees(tomorrow.min)} / ${degrees(tomorrow.max)}</b><small>강수 ${tomorrow.rain===null?'—':Math.round(tomorrow.rain)+'%'}</small></div></div><div class="weather-credit"><span>${error?'이전 예보':kstTime(w.fetchedAt)}</span><a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo ↗</a></div>`;
+  body=`<div class="weather-content"><div class="weather-now"><span class="weather-symbol" aria-hidden="true">${now.icon}</span><div><strong>${degrees(w.current?.temperature)}</strong><span>오늘 · ${now.label}</span></div><div class="weather-range"><span>최고 ${degrees(today.max)}</span><span>최저 ${degrees(today.min)}</span></div></div><div class="weather-tomorrow"><span><span aria-hidden="true">${next.icon}</span> 내일 · ${next.label}</span><b>${degrees(tomorrow.min)} / ${degrees(tomorrow.max)}</b><small>강수 ${tomorrow.rain===null?'—':Math.round(tomorrow.rain)+'%'}</small></div></div><div class="weather-credit"><span>${state.weatherBusy?'전체 갱신 중…':error?'갱신 실패 · 이전 예보':kstTime(w.fetchedAt)}</span>${refreshControl}<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo ↗</a></div>`;
  }
  return `<section class="weather-page" tabindex="0" aria-label="${city.name} 날씨 · ${page+1}/${WEATHER_CITIES.length} 페이지">${header}${body}</section>`;
 }
@@ -136,10 +137,13 @@ async function updateWeather(force=false){
  if(!state.workspace||state.weatherBusy||(!force&&weatherAttempt))return;
  weatherAttempt=Date.now();state.weatherBusy=true;
  const busyWidget=$('#weatherWidget');if(busyWidget){busyWidget.innerHTML=weatherWidget();bindWeather();}
- const results=await Promise.allSettled(WEATHER_CITIES.map(c=>fetchWeather(fetch,new Date(),c.id)));
- results.forEach((r,i)=>{const id=WEATHER_CITIES[i].id;if(r.status==='fulfilled'){state.weather[id]=r.value;delete state.weatherErrors[id];}else state.weatherErrors[id]=r.reason?.message||'연결 실패';});
- state.weatherBusy=false;const widget=$('#weatherWidget');if(widget){widget.innerHTML=weatherWidget();bindWeather();}
- if(force)toast(results.every(r=>r.status==='fulfilled')?'날씨를 새로고침했습니다.':'일부 지역 날씨를 불러오지 못했습니다. 다시 시도해 주세요.');
+ let results;
+ try{
+  results=await fetchAllWeather();
+  results.forEach((r,i)=>{const id=WEATHER_CITIES[i].id;if(r.status==='fulfilled'){state.weather[id]=r.value;delete state.weatherErrors[id];}else state.weatherErrors[id]=r.reason?.message||'연결 실패';});
+ }catch(error){for(const city of WEATHER_CITIES)state.weatherErrors[city.id]=error.message||'연결 실패';}
+ finally{state.weatherBusy=false;const widget=$('#weatherWidget');if(widget){widget.innerHTML=weatherWidget();bindWeather();}}
+ if(force)toast(results?.every(r=>r.status==='fulfilled')?'6개 지역 날씨를 새로고침했습니다.':'날씨 연결에 실패했습니다. ⟳를 눌러 다시 시도해 주세요.');
 }
 async function loadItemVisibility(){
  try{state.itemVisibility=await rows('workdesk_item_visibility',q=>q.eq('workspace_id',state.workspace.id).order('kind').order('drive_id').order('item_id'));state.itemVisibilityError='';}
