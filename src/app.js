@@ -1,7 +1,7 @@
 import {createClient} from '@supabase/supabase-js';
 import {SUPABASE_URL,SUPABASE_KEY,LOGIN_CONFIGURED} from './config.js';
 import {statuses,day,addDays,monthBounds,kstTime,escapeHTML as esc,safeURL,needsAttention,matchesTask,eventOnDay,currentBriefing,dateLabel,upcomingEvents} from './model.js';
-import {messageStatuses,validateMessage,messagesForTarget,mergeCalendarOverrides,mergeSavedMessages,persistConversation} from './conversations.js';
+import {messageStatuses,messageTargets,validateMessage,messagesForTarget,mergeCalendarOverrides,mergeSavedMessages,persistConversation} from './conversations.js';
 import {conversationBadge,conversationPreview,conversationThread,conversationTurn} from './conversation-ui.js';
 import {WEATHER_CITIES,weatherPageIndex,degrees,weatherDescription,fetchAllWeather,RECENT_FILES_LIMIT,fileKind} from './widgets.js';
 import {sourceHealth,collectionSummary} from './source-health.js';
@@ -20,7 +20,7 @@ import {freshKey,isFresh,orderedLinks} from './freshness.js';
 import './style.css';
 import './conversation-refresh.css';
 import './updates.css';
-const APP_VERSION='2.13.0';
+const APP_VERSION='2.14.0';
 const demo=new URLSearchParams(location.search).get('demo')==='1';
 let recoveryPending=recoveryFromURL(location.hash);
 const db=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},global:{fetch:connectionFetch(fetch)}});
@@ -503,12 +503,23 @@ function bind(){
  if($('#calendarMonth'))$('#calendarMonth').onchange=e=>{if(e.target.value)changeMonth(e.target.value);};if($('#exportBtn'))$('#exportBtn').onclick=exportBackup;
 }
 
-function bindItems(root){root.querySelectorAll('[data-task]').forEach(n=>n.onclick=()=>openTask(state.tasks.find(t=>t.id===n.dataset.task)));root.querySelectorAll('[data-event]').forEach(n=>n.onclick=()=>openEvent(state.events.find(e=>e.id===n.dataset.event)));root.querySelectorAll('[data-converse]').forEach(n=>n.onclick=()=>openConversation({}));root.querySelectorAll('[data-message]').forEach(n=>n.onclick=()=>{const m=state.messages.find(x=>x.id===n.dataset.message);if(m)openConversation({task_id:m.task_id,event_id:m.event_id}).then(()=>{scrollToMessage(m.id);});});root.querySelectorAll('[data-history]').forEach(n=>n.onclick=()=>showHistory([...state.history,...detailHistory].find(h=>String(h.id)===n.dataset.history)));}
+function bindItems(root){root.querySelectorAll('[data-task]').forEach(n=>n.onclick=()=>openTask(state.tasks.find(t=>t.id===n.dataset.task)));root.querySelectorAll('[data-event]').forEach(n=>n.onclick=()=>openEvent(state.events.find(e=>e.id===n.dataset.event)));root.querySelectorAll('[data-converse]').forEach(n=>n.onclick=()=>openConversation({}));root.querySelectorAll('[data-message]').forEach(n=>n.onclick=()=>{const m=state.messages.find(x=>x.id===n.dataset.message);if(m)openMessageRecord(m);});root.querySelectorAll('[data-history]').forEach(n=>n.onclick=()=>showHistory([...state.history,...detailHistory].find(h=>String(h.id)===n.dataset.history)));}
 
-function messageCard(m){return `<article class="message-card"><div class="message-context-title">${esc(state.tasks.find(t=>t.id===m.task_id)?.title||state.events.find(e=>e.id===m.event_id)?.title||'자유롭게 남긴 이야기')}</div>${conversationTurn(m)}<button class="text-btn message-read" data-message="${esc(m.id)}">대화 전체 보기 →</button></article>`;}
+function messageCard(m){
+ const targets=messageTargets(m,state.tasks,state.events);
+ const titles=targets.length?targets.map(t=>`<button class="message-topic" ${t.kind==='task'?'data-task':'data-event'}="${esc(t.id)}">${esc(t.title)} <span aria-hidden="true">↗</span></button>`).join(''):'<span class="message-context-title">자유롭게 남긴 기록</span>';
+ return `<article class="message-card"><div class="message-topics">${titles}</div>${conversationTurn(m)}${targets.length?'':`<button class="text-btn message-read" data-message="${esc(m.id)}">이 기록 보기 →</button>`}</article>`;
+}
+function openMessageRecord(m){
+ const targets=messageTargets(m,state.tasks,state.events);
+ if(targets.length){const t=targets[0];return t.kind==='task'?openTask(state.tasks.find(x=>x.id===t.id)):openEvent(state.events.find(x=>x.id===t.id));}
+ $('#detail').innerHTML=`<div class="task-detail"><div class="dialog-head"><h2>남긴 기록</h2><button class="icon-btn" id="closeRecord" aria-label="닫기">×</button></div><div class="dialog-body">${conversationTurn(m)}</div><div class="dialog-foot"><span class="task-detail-caption">${m.resolution_status==='clarification'?'답변을 남길 때 어떤 기록에 관한 이야기인지 함께 적어주세요.':'원문과 다한닷의 확인 결과를 보존합니다.'}</span><button class="btn primary" id="recordCompose">새 이야기 남기기</button></div></div>`;
+ $('#closeRecord').onclick=()=>$('#detail').close();$('#recordCompose').onclick=async()=>{await openConversation({});const input=$('#conversationText');if(!input.value){input.value=`${kstTime(m.created_at)}에 남긴 “${m.body.slice(0,180)}${m.body.length>180?'…':''}”에 이어서:
+`;input.dispatchEvent(new Event('input'));input.focus();}};if(!$('#detail').open)$('#detail').showModal();
+}
 function conversationView(){const pending=state.messages.filter(m=>m.resolution_status==='pending').length;return `<section class="panel paged-panel conversation-feed"><div class="panel-head"><h2>나눈 이야기</h2><span class="badge ${pending?'review':''}">${pending?`확인 대기 ${pending}건`:'모든 대화 확인'}</span></div><p class="conversation-page-note">진척과 생각을 편하게 남기세요. 다한닷이 후속 일을 정리합니다.</p>${scrollList([...state.messages].reverse(),'messages',messageCard,'아직 나눈 이야기가 없습니다. 대화로 남기기를 눌러주세요.')}</section>`;}
 
-function contextSummary(){const t=state.tasks.find(t=>t.id===conversationTarget.task_id),e=state.events.find(e=>e.id===conversationTarget.event_id);if(t)return `<section class="conversation-context"><div class="task-meta">${statusBadge(t.status)}${t.archived?'<span class="badge">보관됨</span>':''}${t.next_review_on?`<span>다음 확인 ${dateLabel(t.next_review_on)}</span>`:''}${t.due_date?`<span>마감 ${dateLabel(t.due_date)}</span>`:''}</div><h3>${esc(t.title)}</h3>${t.remaining_action?`<p>남은 일 · ${linkedText(t.remaining_action)}</p>`:''}<small>현재 반영된 내용입니다. 새로 남긴 이야기는 확인 후 바뀝니다.</small><button type="button" class="text-btn" data-task-detail="${esc(t.id)}">업무 내용 · 원문 보기 →</button></section>`;if(e)return `<section class="conversation-context"><div class="task-meta"><span>${e.excluded?'내 업무보드에서 제외됨':e.all_day?dateLabel(e.start_at)+' · 종일':kstTime(e.start_at)}</span></div><h3>${esc(e.title)}</h3>${e.personal_note?`<p>${linkedText(e.personal_note)}</p>`:''}<small>업무보드에 표시할 일정과 준비할 일을 이야기해 주세요.</small><button type="button" class="text-btn" data-event-detail="${esc(e.id)}">업무 내용 · 원문 보기 →</button></section>`;return '<section class="conversation-context"><h3>어떤 이야기든 편하게 남겨주세요.</h3><p>새로운 업무도, 여러 업무의 진행 상황도 한 번에 적어도 됩니다.</p></section>';}
+function contextSummary(){const t=state.tasks.find(t=>t.id===conversationTarget.task_id),e=state.events.find(e=>e.id===conversationTarget.event_id);if(t)return `<section class="conversation-context"><div class="task-meta">${statusBadge(t.status)}${t.archived?'<span class="badge">보관됨</span>':''}${t.next_review_on?`<span>다음 확인 ${dateLabel(t.next_review_on)}</span>`:''}${t.due_date?`<span>마감 ${dateLabel(t.due_date)}</span>`:''}</div><h3>${esc(t.title)}</h3>${t.remaining_action?`<p>남은 일 · ${linkedText(t.remaining_action)}</p>`:''}<small>현재 반영된 내용입니다. 새로 남긴 이야기는 확인 후 바뀝니다.</small></section>`;if(e)return `<section class="conversation-context"><div class="task-meta"><span>${e.excluded?'내 업무보드에서 제외됨':e.all_day?dateLabel(e.start_at)+' · 종일':kstTime(e.start_at)}</span></div><h3>${esc(e.title)}</h3>${e.personal_note?`<p>${linkedText(e.personal_note)}</p>`:''}<small>업무보드에 표시할 일정과 준비할 일을 이야기해 주세요.</small></section>`;return '<section class="conversation-context"><h3>어떤 이야기든 편하게 남겨주세요.</h3><p>새로운 업무도, 여러 업무의 진행 상황도 한 번에 적어도 됩니다.</p></section>';}
 function threadHTML(){return conversationThread(messagesForTarget(state.messages,conversationTarget));}
 function scrollToMessage(id){const body=$('#detail .dialog-body'),message=[...document.querySelectorAll('[data-thread-message]')].find(n=>n.dataset.threadMessage===id);if(body&&message)body.scrollTop+=message.getBoundingClientRect().top-body.getBoundingClientRect().top-12;}
 function refreshConversation({toLatest=false}={}){
@@ -519,8 +530,7 @@ function refreshConversation({toLatest=false}={}){
 }
 function renderDetailHistory(){const node=$('#detailHistory');if(!node)return;const top=node.scrollTop;node.innerHTML=historyList(detailHistory)||empty('저장된 변경 이력이 없습니다.');node.scrollTop=top;bindItems(node);}
 function readableItemContent(task,event){
- const target=task?{task_id:task.id}:{event_id:event.id},preview=conversationPreview(state.messages,target);
- return task?taskDetailContent(task,preview):eventDetailContent(event,preview);
+ return task?taskDetailContent(task,''):eventDetailContent(event,'');
 }
 function bindStoryButtons(root){
  root.querySelectorAll('[data-story-task]').forEach(button=>button.onclick=()=>{
@@ -547,18 +557,27 @@ async function loadTaskDetailHistory(id){
 }
 const openTask=task=>{if(task){markRead('task',task.id,task.created_at);render();}return openItemDetail(task);};
 const openEvent=event=>openItemDetail(null,event);
+function itemTabs(active){return `<nav class="item-tabs" aria-label="업무 상세 화면"><button type="button" data-item-pane="content" aria-pressed="${active==='content'}">업무 내용</button><button type="button" data-item-pane="story" aria-pressed="${active==='story'}">업무 이야기</button></nav>`;}
+function bindItemTabs(){
+ const target={...conversationTarget};
+ document.querySelectorAll('[data-item-pane]').forEach(b=>b.onclick=()=>{
+  if(b.getAttribute('aria-pressed')==='true')return;
+  if($('#conversationForm')?.dataset.saving==='true')return;
+  b.dataset.itemPane==='story'?openConversation(target):openItemDetail(state.tasks.find(t=>t.id===target.task_id),state.events.find(e=>e.id===target.event_id));
+ });
+}
 async function openItemDetail(task,event){
  if(!task&&!event)return;
  const target={task_id:task?.id||null,event_id:event?.id||null};
  conversationTarget=target;editTask=task?structuredClone(task):null;detailHistory=[];
- $('#detail').innerHTML=`<div class="task-detail"><div class="dialog-head"><h2>업무 내용</h2><button type="button" class="icon-btn" id="closeItemDetail" aria-label="닫기">×</button></div><div class="dialog-body" tabindex="0" role="region" aria-label="업무 내용 스크롤"><div id="itemDetailContent" ${task?`data-task-id="${esc(task.id)}"`:`data-event-id="${esc(event.id)}"`}>${readableItemContent(task,event)}</div>${task?'<details class="previous-records"><summary>변경 이력</summary><div id="detailHistory" tabindex="0" role="region" aria-label="업무 변경 이력 스크롤"></div></details>':''}</div><div class="dialog-foot"><span class="task-detail-caption">진행 상황은 이야기로 남겨주세요.</span><span class="spacer"></span><button type="button" class="btn primary" id="openItemConversation">업무 이야기 →</button></div></div>`;
- $('#closeItemDetail').onclick=()=>$('#detail').close();$('#openItemConversation').onclick=()=>openConversation(target);bindStoryButtons($('#detail'));
+ $('#detail').innerHTML=`<div class="task-detail"><div class="dialog-head"><h2>업무 살펴보기</h2><button type="button" class="icon-btn" id="closeItemDetail" aria-label="닫기">×</button></div>${itemTabs('content')}<div class="dialog-body" tabindex="0" role="region" aria-label="업무 내용 스크롤"><div id="itemDetailContent" ${task?`data-task-id="${esc(task.id)}"`:`data-event-id="${esc(event.id)}"`}>${readableItemContent(task,event)}</div>${task?'<details class="previous-records"><summary>변경 이력</summary><div id="detailHistory" tabindex="0" role="region" aria-label="업무 변경 이력 스크롤"></div></details>':''}</div><div class="dialog-foot"><span class="task-detail-caption">진행 상황은 이야기로 남겨주세요.</span><span class="spacer"></span><button type="button" class="btn primary" id="openItemConversation">업무 이야기 →</button></div></div>`;
+ $('#closeItemDetail').onclick=()=>$('#detail').close();$('#openItemConversation').onclick=()=>openConversation(target);bindStoryButtons($('#detail'));bindItemTabs();
  if(!$('#detail').open)$('#detail').showModal();$('#detail .dialog-body').scrollTop=0;
  if(task)await loadTaskDetailHistory(task.id);
 }
 async function openConversation(target){conversationTarget={task_id:target.task_id||null,event_id:target.event_id||null};const key=targetKey(conversationTarget);const task=state.tasks.find(t=>t.id===conversationTarget.task_id),event=state.events.find(e=>e.id===conversationTarget.event_id);editTask=task?structuredClone(task):null;detailHistory=[];const draft=drafts.get(key)||{body:'',id:crypto.randomUUID()};drafts.set(key,draft);
- $('#detail').innerHTML=`<form id="conversationForm"><div class="dialog-head"><div><p class="eyebrow">A CONVERSATION WITH DAHANDOT</p><h2>${task||event?'업무 이야기':'다한닷에게 남기기'}</h2></div><button type="button" class="icon-btn" id="closeConversation" aria-label="닫기">×</button></div><div class="dialog-body conversation-body"><div id="conversationContext">${contextSummary()}</div><div id="conversationThread">${threadHTML()}</div>${task||event?`<details class="previous-records"><summary>이전 메모 · 원문 · 변경 이력</summary>${task?.note?`<div class="legacy-note">${linkedText(task.note)}</div>`:''}${task?sourceReferencesHTML(task.source_refs||[]):''}${event?link(event.url,'일정 원문'):''}<div id="detailHistory" tabindex="0" role="region" aria-label="업무 변경 이력 스크롤"></div></details>`:''}</div><div class="conversation-compose"><label class="conversation-label" for="conversationText">진행한 내용을 편하게 적어주세요</label><textarea id="conversationText" rows="3" maxlength="12000" required>${esc(draft.body)}</textarea><details class="conversation-timing"><summary>저장한 이야기는 언제 반영되나요?</summary><p>대화는 바로 저장됩니다. 다음 정기 갱신 때 다한닷이 읽고 정리합니다. 지금 반영하려면 ChatGPT에서 “업무보드 대화 반영해줘”라고 말씀해 주세요.</p></details><div id="conversationError" class="error" role="alert"></div></div><div class="dialog-foot"><span class="save-caption">${demo?'체험 대화 · 실제 저장 없음':'즉시 저장 · 다음 갱신 때 정리'}</span><span class="spacer"></span><button type="submit" class="btn primary" id="sendConversation">대화 남기기 ↑</button></div></form>`;
- $('#closeConversation').onclick=()=>$('#detail').close();$('#conversationText').oninput=e=>{const previous=drafts.get(key);drafts.set(key,{body:e.target.value,id:previous?.body===e.target.value?previous.id:crypto.randomUUID()});};$('#conversationForm').onsubmit=sendConversation;bindItemDetailButtons();if(!$('#detail').open)$('#detail').showModal();$('#detail .dialog-body').scrollTop=$('#detail .dialog-body').scrollHeight;
+ $('#detail').innerHTML=`<form id="conversationForm"><div class="dialog-head"><div><p class="eyebrow">A CONVERSATION WITH DAHANDOT</p><h2>${task||event?'업무 살펴보기':'자유롭게 남기기'}</h2></div><button type="button" class="icon-btn" id="closeConversation" aria-label="닫기">×</button></div>${task||event?itemTabs('story'):''}<div class="dialog-body conversation-body"><div id="conversationContext">${contextSummary()}</div>${task||event?`<div id="conversationThread">${threadHTML()}</div>`:'<div class="free-note-guide"><p>진행한 일, 떠오른 생각, 회의 메모를 자유롭게 남겨주세요.</p><p>다한닷이 관련 업무와 연결하고, 후속 업무·회의록 참고·주간업무보고에 활용합니다.</p><small>“처리 완료”처럼 대상이 모호하면 확인을 요청합니다. 특정 업무 이야기는 해당 업무에서 남기면 더 명확합니다.</small></div>'}</div><div class="conversation-compose"><label class="conversation-label" for="conversationText">${task||event?'이 업무에 이어서 이야기하기':'오늘 남기고 싶은 이야기'}</label><textarea id="conversationText" placeholder="${task||event?'진행한 일이나 남은 일을 알려주세요':'예: 오늘 자재관리 회의에서 반입 확인 방식을 논의했어. 다음 회의에서는 담당자 의견을 더 들어봐야 해.'}" rows="${task||event?3:7}" maxlength="12000" required>${esc(draft.body)}</textarea><details class="conversation-timing"><summary>저장한 이야기는 언제 반영되나요?</summary><p>대화는 바로 저장됩니다. 다음 정기 갱신 때 다한닷이 읽고 정리합니다. 지금 반영하려면 ChatGPT에서 “업무보드 대화 반영해줘”라고 말씀해 주세요.</p></details><div id="conversationError" class="error" role="alert"></div></div><div class="dialog-foot"><span class="save-caption">${demo?'체험 대화 · 실제 저장 없음':'즉시 저장 · 다음 갱신 때 정리'}</span><span class="spacer"></span><button type="submit" class="btn primary" id="sendConversation">대화 남기기 ↑</button></div></form>`;
+ $('#closeConversation').onclick=()=>$('#detail').close();$('#conversationText').oninput=e=>{const previous=drafts.get(key);drafts.set(key,{body:e.target.value,id:previous?.body===e.target.value?previous.id:crypto.randomUUID()});};$('#conversationForm').onsubmit=sendConversation;bindItemDetailButtons();bindItemTabs();if(!$('#detail').open)$('#detail').showModal();$('#detail .dialog-body').scrollTop=$('#detail .dialog-body').scrollHeight;
  if(task)await loadTaskDetailHistory(task.id);
 }
 async function sendConversation(e){
@@ -574,7 +593,7 @@ async function sendConversation(e){
   if(state.workspace?.id!==workspace)return;
   state.messages=mergeSavedMessages(state.messages,[message]);
   if(drafts.get(key)?.id===draft.id){drafts.delete(key);if(targetKey(conversationTarget)===key&&$('#conversationText'))$('#conversationText').value='';}
-  if($('#conversationForm')===form){input.value='';$('#detail').close();}
+  if($('#conversationForm')===form){input.value='';if(target.task_id||target.event_id)refreshConversation({toLatest:true});else $('#detail').close();}
   render();toast(demo?'체험 대화를 저장했습니다. 실제 업무에는 저장되지 않습니다.':'대화를 저장했습니다.');
   void refresh(true);
  }catch(error){if($('#conversationForm')===form)errorBox.textContent=errorMessage(error);}

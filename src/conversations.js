@@ -1,5 +1,16 @@
 export const messageStatuses = {pending:'다한닷 확인 대기',applied:'반영 완료',clarification:'답변이 필요해요'};
 
+export function messageTargets(message,tasks=[],events=[]){
+ const refs=[...(message.task_id?[{kind:'task',id:message.task_id}]:[]),...(message.event_id?[{kind:'event',id:message.event_id}]:[]),...(message.changes||[])];
+ const seen=new Set();
+ return refs.flatMap(ref=>{
+  const kind=ref.kind==='new_task'?'task':ref.kind;
+  if(!['task','event'].includes(kind)||seen.has(kind+':'+ref.id))return [];
+  const item=(kind==='task'?tasks:events).find(item=>item.id===ref.id);
+  if(!item)return [];seen.add(kind+':'+ref.id);return [{kind,id:ref.id,title:item.title}];
+ });
+}
+
 export function validateMessage(body){
  const text=String(body??'').trim();
  if(!text)throw Error('남길 이야기를 적어주세요.');

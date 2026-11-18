@@ -88,3 +88,20 @@
  .task-detail-hero .task-detail-meta{padding:12px;gap:10px}
  .item-stories.chat-surface{padding:12px}
 }
+
+/* Neutral workspace surfaces; only the user's message bubble keeps its yellow. */
+.chat-surface,.conversation-feed .scroll-list,.conversation-feed .message-card,.conversation-body,.conversation-compose,.conversation-empty{background:var(--surface,#fff);border-color:var(--line)}
+.conversation-context,.item-stories.chat-surface{background:var(--soft,#f5f7f4);border-color:var(--line)}
+.story-thread.chat-surface{border:0;padding:10px 0}
+.conversation-turn+.conversation-turn{border-color:var(--line)}
+:root[data-theme=dark] .chat-surface,:root[data-theme=dark] .conversation-feed .message-card,:root[data-theme=dark] .conversation-empty,:root[data-theme=dark] .conversation-body,:root[data-theme=dark] .conversation-compose{background:var(--surface);border-color:var(--line)}
+.item-tabs{display:flex;flex:none;gap:4px;margin:0;padding:8px 24px;border-bottom:1px solid var(--line);background:var(--surface,#fff)}
+.item-tabs button{flex:1;padding:11px 10px;border:0;border-radius:8px;background:transparent;color:var(--muted);font:inherit;font-size:14px;cursor:pointer}
+.item-tabs button[aria-pressed=true]{background:var(--soft);color:var(--green);font-weight:700;box-shadow:inset 0 -2px var(--green)}
+.message-topics{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
+.conversation-feed .message-card .message-topic{display:inline-flex;align-items:center;gap:8px;width:auto;max-width:100%;text-align:left;border:0;background:var(--soft);color:var(--green);font-size:13px;font-weight:700;padding:8px 12px;border-radius:8px;cursor:pointer;overflow-wrap:anywhere}
+.conversation-feed .message-card .message-topic:hover{text-decoration:underline}
+.free-note-guide{font-size:14px;line-height:1.85;padding:6px 0}
+.free-note-guide p{margin:8px 0}.free-note-guide small{display:block;color:var(--muted);line-height:1.7}
+.conversation-compose textarea{border-color:var(--line)}
+@media(max-width:760px){.item-tabs{padding:7px 16px}.item-tabs button{font-size:13px;padding:10px}.free-note-guide{font-size:13px}}
