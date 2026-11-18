@@ -63,8 +63,8 @@ export async function fetchAllWeather(fetcher=fetch,now=new Date(),timeoutMs=150
 export const RECENT_FILES_LIMIT=30;
 // Show up to 30 latest files after deduplication. Earlier changes remain stored.
 export function recentFiles(items,now=new Date()){
- const since=Date.parse(addDays(day(now),-6)+'T00:00:00+09:00'),seen=new Set();
- return [...items].filter(f=>Date.parse(f.changed_at)>=since&&Date.parse(f.changed_at)<=+new Date(now)+300000)
+ const seen=new Set();
+ return [...items].filter(f=>Number.isFinite(Date.parse(f.changed_at))&&Date.parse(f.changed_at)<=+new Date(now)+300000)
  .sort((a,b)=>Date.parse(b.changed_at)-Date.parse(a.changed_at)||String(a.item_id).localeCompare(String(b.item_id)))
  .filter(f=>{const k=f.drive_id+':'+f.item_id;if(seen.has(k))return false;seen.add(k);return true;}).slice(0,RECENT_FILES_LIMIT);
 }

@@ -17,10 +17,10 @@ test('the visible file cap is applied after hiding and deduplicating, so older e
  const visible=visibleFiles(files,[pref('file','drive','0'),pref('file','drive','1')],now);
  assert.equal(visible.length,30);assert.equal(visible[0].item_id,'2');assert.equal(visible.at(-1).item_id,'31');
 });
-test('restoring a file respects the seven-day window and never creates a stale card',()=>{
+test('restoring an older file makes it eligible for the latest thirty',()=>{
  const file={drive_id:'drive',item_id:'old',changed_at:'2026-10-01T00:00:00Z'};
  const preferences=[{...pref('file','drive','old'),hidden_at:null}];
- assert.equal(visibleFiles([file],preferences,now).length,0);assert.equal(hiddenItems(preferences,'file').length,0);
+ assert.equal(visibleFiles([file],preferences,now).length,1);assert.equal(hiddenItems(preferences,'file').length,0);
 });
 test('agenda hiding is independent of calendar data, cancellation, and personal exclusion',()=>{
  const event={id:'event',start_at:'2026-11-12T10:00:00+09:00',end_at:'2026-11-12T11:00:00+09:00',status:'confirmed'};
