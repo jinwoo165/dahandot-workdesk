@@ -1,5 +1,9 @@
 // NEW marks unread additions (or file revisions), not ordinary background checks.
 export const freshKey=(kind,id,stamp)=>JSON.stringify([kind,id,stamp||'']);
+export function isUnread(kind,item,seen,now=Date.now()){
+ const stamp=kind==='task'?item.created_at:item.added_at;
+ return Number.isFinite(Date.parse(stamp))&&Date.parse(stamp)<=now+300000&&!seen[freshKey(kind,item.id,stamp)];
+}
 export function isFresh(stamp,key,seen,now=Date.now()){
  const time=Date.parse(stamp);
  return Number.isFinite(time)&&time<=now+300000&&time>=now-7*86400000&&!seen[key];

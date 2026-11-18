@@ -11,3 +11,13 @@ test('NEW clears only for opened revision and expires after seven days',()=>{
  assert.equal(isFresh(null,key,{},now),false);assert.equal(isFresh('2026-10-01',key,{},now),false);
  assert.equal(isFresh('2026-11-19T00:00Z',freshKey('file','drive:item','2026-11-19T00:00Z'),{[key]:now},now),true);
 });
+
+test('unread counts do not expire or reset when task status changes',async()=>{
+ const {isUnread,freshKey}=await import('../src/freshness.js');
+ const task={id:'task',created_at:'2026-01-01T00:00:00Z',status:'todo'};
+ const now=Date.parse('2026-11-19T00:00:00Z'),seen={};
+ assert.equal(isUnread('task',task,seen,now),true);
+ seen[freshKey('task',task.id,task.created_at)]=now;
+ assert.equal(isUnread('task',{...task,status:'partial',pending_review:true},seen,now),false);
+ assert.equal(isUnread('link',{id:'legacy',added_at:null},seen,now),false);
+});
