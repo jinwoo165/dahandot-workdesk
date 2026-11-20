@@ -21,7 +21,7 @@ import {UserSync} from './user-sync.js';
 import './style.css';
 import './conversation-refresh.css';
 import './updates.css';
-const APP_VERSION='2.15.0';
+const APP_VERSION='2.15.1';
 const demo=new URLSearchParams(location.search).get('demo')==='1';
 let recoveryPending=recoveryFromURL(location.hash);
 const db=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},global:{fetch:connectionFetch(fetch)}});
@@ -89,6 +89,7 @@ function queueUserState(key,value){if(!userSync)return;userSync.set(key,value);c
 async function loadUserState(){
  const workspace=state.workspace.id,user=state.user.id,scope='dahandot-sync:'+user+':'+workspace;
  if(userSync?.scope!==scope){
+  clearTimeout(userSyncTimer);drafts.clear();
   let storage;try{storage=localStorage;}catch{}
   userSync=new UserSync({scope,storage,read:()=>rows('workdesk_user_state',q=>q.eq('workspace_id',workspace).eq('user_id',user).order('state_key')),write:async(key,value,revision)=>{const result=await withDeadline(db.rpc('save_workdesk_user_state',{p_workspace:workspace,p_key:key,p_value:value,p_revision:revision}));if(result.error)throw result.error;return result.data;},changed:()=>{if(userSync?.scope===scope)syncDraftView();}});
  }
