@@ -648,3 +648,28 @@ dialog>.dialog-body{max-height:calc(92dvh - 160px);overflow-y:auto;overscroll-be
  body .search-result-open>p{font-size:14px;line-height:1.75}
  body footer{display:flex;margin-top:16px}
 }
+.mobile-summary-back{display:none}
+/* Keep mobile navigation and reading inside the device viewport. */
+@media(max-width:900px){
+ html,html body{height:100%;overflow:hidden;overscroll-behavior:none}
+ body .layout{height:100dvh;min-height:0;max-height:100dvh;overflow:hidden}
+ body .sidebar{position:relative;flex:0 0 auto}
+ body .work-area{display:flex;flex-direction:column;flex:1;min-height:0;height:auto;overflow:hidden}
+ body .main{display:flex;flex-direction:column;flex:1;min-height:0;height:auto;overflow:hidden;padding:8px 12px 0}
+ body .main>footer{display:none}
+ body .unified-board,body .unified-board.has-work{flex:1;min-height:0;height:100%;overflow:hidden;gap:8px}
+ body .unified-board>.board-panel-tabs{position:relative;top:auto;bottom:auto;order:10;z-index:4;flex:0 0 auto;min-height:56px;padding:4px 3px calc(4px + env(safe-area-inset-bottom));border-radius:12px 12px 0 0;border-bottom:0;margin:0}
+ body .board-panel-tabs button{min-height:46px;font-size:14px}
+ body .unified-board.has-work>.shared-briefing{flex:1;min-height:0;height:auto;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+ body .unified-board[data-mobile-expanded=false]>.board-slides{display:none}
+ body .unified-board[data-mobile-expanded=true]>.shared-briefing{display:none!important}
+ body .unified-board>.board-slides{order:2;flex:1;min-height:0;height:auto}
+ body .unified-board[data-mobile-expanded=true]>.mobile-summary-back{display:block;order:0;flex:none;min-height:32px;padding:4px 10px;text-align:left;color:var(--green);font-size:12px}
+ body .work-area:has(.unified-board[data-mobile-expanded=true])>.topbar{display:none}
+ body .unified-board[data-mobile-expanded=true]>.board-slides{animation:mobile-panel-rise .2s ease-out}
+ body .unified-search-board{flex:1;height:auto;min-height:0;overflow:hidden}
+ body .main>.notice{flex:none;max-height:72px;overflow:auto;margin-bottom:8px}
+ .board-slides .panel-scroll,.board-slides .conversation-feed,.board-slides .search-results{overscroll-behavior-y:contain}
+ @keyframes mobile-panel-rise{from{opacity:.7;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+}
+@media(max-width:900px) and (prefers-reduced-motion:reduce){body .unified-board[data-mobile-expanded=true]>.board-slides{animation:none}}

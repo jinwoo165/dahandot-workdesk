@@ -20,13 +20,13 @@ import {freshKey,isFresh,isUnread,orderedLinks} from './freshness.js';
 import './style.css';
 import './conversation-refresh.css';
 import './updates.css';
-const APP_VERSION='2.14.2';
+const APP_VERSION='2.14.3';
 const demo=new URLSearchParams(location.search).get('demo')==='1';
 let recoveryPending=recoveryFromURL(location.hash);
 const db=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},global:{fetch:connectionFetch(fetch)}});
 const authActions=passwordActions(db.auth,location.origin+location.pathname);
 const $=s=>document.querySelector(s), app=$('#app');
-const state={user:null,workspace:null,tasks:[],events:[],runs:[],links:[],history:[],messages:[],overrides:[],sourceEvents:[],files:[],fileRuns:[],fileError:'',fileSummaries:[],summaryError:'',collectionResults:[],collectionError:'',updateAvailable:null,sourceSelected:null,rail:'files',mobilePanel:'work',calendarPane:'month',calendarScope:'day',historyMonth:'',historyError:'',historyLoading:false,weather:{},weatherErrors:{},weatherBusy:false,weatherPage:0,view:'work',taskFilter:'today',showRemovedLinks:false,linkBusy:false,briefingDismissals:[],briefingError:'',briefingBusy:false,showHiddenBriefing:false,itemVisibility:[],itemVisibilityError:'',itemVisibilityBusy:false,showHiddenAgenda:false,showHiddenFiles:false,query:'',searchText:'',searchFiles:[],searchFilesLoaded:false,searchFilesLoading:false,searchFilesError:'',month:day().slice(0,7),selected:day(),synced:null,realtime:false,error:'',loading:false};
+const state={user:null,workspace:null,tasks:[],events:[],runs:[],links:[],history:[],messages:[],overrides:[],sourceEvents:[],files:[],fileRuns:[],fileError:'',fileSummaries:[],summaryError:'',collectionResults:[],collectionError:'',updateAvailable:null,sourceSelected:null,rail:'files',mobilePanel:'work',mobileExpanded:false,calendarPane:'month',calendarScope:'day',historyMonth:'',historyError:'',historyLoading:false,weather:{},weatherErrors:{},weatherBusy:false,weatherPage:0,view:'work',taskFilter:'today',showRemovedLinks:false,linkBusy:false,briefingDismissals:[],briefingError:'',briefingBusy:false,showHiddenBriefing:false,itemVisibility:[],itemVisibilityError:'',itemVisibilityBusy:false,showHiddenAgenda:false,showHiddenFiles:false,query:'',searchText:'',searchFiles:[],searchFilesLoaded:false,searchFilesLoading:false,searchFilesError:'',month:day().slice(0,7),selected:day(),synced:null,realtime:false,error:'',loading:false};
 const views={
  conversation:['다한닷과 대화','진척과 생각을 편하게 남기세요.\n필요한 정리는\n다한닷이 이어갑니다.','◌'],
  work:['업무 목록','오늘 챙길 일부터 완료 기록까지,\n한곳에서 확인하세요.','☷'],
@@ -444,7 +444,7 @@ function taskFilters(){
 }
 function boardLayout(isWork){
  if(state.query)return `<div class="board-grid unified-search-board">${searchView()}</div>`;
- return `<div class="board-grid unified-board ${isWork?'has-work':''}" data-board-view="${state.view}" data-mobile-panel="${state.mobilePanel}">${isWork?`<div class="shared-briefing">${briefingWidget()}</div>`:''}<nav class="board-panel-tabs" aria-label="보드 영역">${[['work',isWork?'업무':views[state.view][0]],...(isWork?[['agenda','다가오는 일정']]:[]),['files','최근 자료']].map(([id,label])=>`<button data-mobile-panel="${id}" aria-pressed="${state.mobilePanel===id}">${label}</button>`).join('')}</nav><div class="board-slides"><div class="board-main shared-main">${isWork?`<div class="work-columns"><div id="viewBody">${bodyView()}</div><div class="work-agenda">${agendaPanel()}</div></div>`:`<div id="viewBody">${bodyView()}</div>`}</div><aside class="shared-files">${filesWidget()}</aside></div></div>`;
+ return `<div class="board-grid unified-board ${isWork?'has-work':''}" data-mobile-expanded="${state.mobileExpanded||!isWork}" data-board-view="${state.view}" data-mobile-panel="${state.mobilePanel}">${isWork?`<div class="shared-briefing">${briefingWidget()}</div>`:''}${isWork?'<button class="mobile-summary-back" id="mobileSummaryBack">⌃ 오늘의 주요 내용</button>':''}<nav class="board-panel-tabs" aria-label="보드 영역">${[['work',isWork?'업무':views[state.view][0]],...(isWork?[['agenda','다가오는 일정']]:[]),['files','최근 자료']].map(([id,label])=>`<button data-mobile-panel="${id}" aria-pressed="${state.mobilePanel===id}">${label}</button>`).join('')}</nav><div class="board-slides"><div class="board-main shared-main">${isWork?`<div class="work-columns"><div id="viewBody">${bodyView()}</div><div class="work-agenda">${agendaPanel()}</div></div>`:`<div id="viewBody">${bodyView()}</div>`}</div><aside class="shared-files">${filesWidget()}</aside></div></div>`;
 }
 
 let versionCheckedAt=0;
@@ -472,7 +472,7 @@ async function changeMonth(month){
  state.month=month;state.selected=month===day().slice(0,7)?day():month+'-01';state.historyError='';
  const loading=loadHistory();render();try{await loading;}catch(e){toast(errorMessage(e));}render();
 }
-function navigate(view){clearTimeout(searchTimer);searchComposing=false;state.view=view;state.query='';state.searchText='';state.mobilePanel='work';render();}
+function navigate(view){clearTimeout(searchTimer);searchComposing=false;state.view=view;state.query='';state.searchText='';state.mobilePanel='work';state.mobileExpanded=false;render();}
 function openProgressList(group){
  const p=workProgress(state.tasks),items=p.groups[group]||[],label={done:'완료한 업무',remaining:'남은 업무',review:'새로 확인할 업무'}[group];
  $('#historyDetail').innerHTML=`<div class="dialog-head"><h2>${label} · ${items.length}개</h2><button class="icon-btn" id="closeProgress" aria-label="닫기">×</button></div><div class="dialog-body progress-list"><p class="muted">${group==='review'?'신규 업무와 원본 변경을 확인할 목록입니다. 읽기만 해서는 상태가 바뀌지 않습니다.':'확정 업무 기준입니다. 확인 필요 상태와 보관 업무는 제외합니다.'}</p>${items.map(t=>`<button class="progress-task" data-progress-task="${esc(t.id)}"><strong>${esc(t.title)}</strong>${statusBadge(t.status)}<span>${esc(t.remaining_action||t.next_action||t.note||'업무 내용 보기')}</span></button>`).join('')||'<p class="empty">해당 업무가 없습니다.</p>'}</div>`;
@@ -500,12 +500,13 @@ function bind(){
  if($('#showRemovedLinks'))$('#showRemovedLinks').onclick=()=>{state.showRemovedLinks=!state.showRemovedLinks;render();};
  $('#mobileView').onchange=e=>navigate(e.target.value);app.querySelectorAll('[data-logout]').forEach(n=>n.onclick=logout);
  $('#themeToggle').onclick=()=>{theme=theme==='dark'?'light':'dark';document.documentElement.dataset.theme=theme;try{localStorage.setItem('dahandot-theme',theme);}catch{}render();};
- app.querySelectorAll('[data-rail]').forEach(b=>b.onclick=()=>{state.rail=b.dataset.rail;state.mobilePanel=b.dataset.rail;render();});app.querySelectorAll('[data-mobile-panel]').forEach(b=>{if(b.tagName==='BUTTON')b.onclick=()=>{state.mobilePanel=b.dataset.mobilePanel;if(window.matchMedia('(max-width:900px)').matches)slideMobilePanel(state.mobilePanel,true);else render();};});
+ app.querySelectorAll('[data-rail]').forEach(b=>b.onclick=()=>{state.rail=b.dataset.rail;state.mobilePanel=b.dataset.rail;render();});app.querySelectorAll('[data-mobile-panel]').forEach(b=>{if(b.tagName==='BUTTON')b.onclick=()=>{state.mobilePanel=b.dataset.mobilePanel;if(window.matchMedia('(max-width:900px)').matches){state.mobileExpanded=true;render();}else render();};});
  app.querySelectorAll('[data-calendar-scope]').forEach(b=>b.onclick=()=>{state.calendarScope=b.dataset.calendarScope;state.calendarPane='day';render();});
  app.querySelectorAll('button[data-calendar-pane]').forEach(b=>b.onclick=()=>{state.calendarPane=b.dataset.calendarPane;render();});
  app.querySelectorAll('[data-info]').forEach(b=>b.onclick=()=>showInfo(b.dataset.info));
  $('#sceneryToggle').onclick=()=>{sceneryPaused=!sceneryPaused;try{localStorage.setItem('dahandot-scenery-paused',String(sceneryPaused));}catch{}const banner=$('.scenic-banner');banner.classList.toggle('paused',sceneryPaused);$('#sceneryToggle').textContent=sceneryPaused?'▷':'Ⅱ';$('#sceneryToggle').setAttribute('aria-pressed',String(sceneryPaused));$('#sceneryToggle').setAttribute('aria-label','풍경 움직임 '+(sceneryPaused?'재생':'멈춤'));};
  app.querySelectorAll('[data-refresh]').forEach(b=>b.onclick=manualRefresh);if($('#applyUpdate'))$('#applyUpdate').onclick=applyUpdate;app.querySelectorAll('[data-compose]').forEach(b=>b.onclick=()=>openConversation({}));bindWeather();bindItems(app);
+ if($('#mobileSummaryBack'))$('#mobileSummaryBack').onclick=()=>{state.mobileExpanded=false;render();};
  bindMobileSlides();
  bindGlobalSearch();
  if($('#prevMonth')){$('#prevMonth').onclick=()=>changeMonth(addDays(state.month+'-01',-1).slice(0,7));$('#nextMonth').onclick=()=>changeMonth(monthBounds(state.month)[1].slice(0,7));$('#calendarToday').onclick=()=>changeMonth(day().slice(0,7));app.querySelectorAll('[data-day]').forEach(n=>n.onclick=async()=>{const d=n.dataset.day;if(d.slice(0,7)!==state.month)await changeMonth(d.slice(0,7));state.selected=d;state.calendarScope='day';state.calendarPane='day';render();});}
@@ -518,7 +519,7 @@ function slideMobilePanel(id,animate=false){
  const ids=state.view==='work'?['work','agenda','files']:['work','files'];
  const index=Math.max(0,ids.indexOf(id));
  track.scrollTo({left:index*track.clientWidth,behavior:animate&&!matchMedia('(prefers-reduced-motion:reduce)').matches?'smooth':'instant'});
- app.querySelectorAll('.board-panel-tabs button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mobilePanel===ids[index])));
+ app.querySelectorAll('.board-panel-tabs button').forEach(b=>b.setAttribute('aria-pressed',String((state.mobileExpanded||state.view!=='work')&&b.dataset.mobilePanel===ids[index])));
 }
 function bindMobileSlides(){
  const track=$('.board-slides');if(!track)return;
