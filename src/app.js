@@ -20,7 +20,7 @@ import {freshKey,isFresh,isUnread,orderedLinks} from './freshness.js';
 import './style.css';
 import './conversation-refresh.css';
 import './updates.css';
-const APP_VERSION='2.14.3';
+const APP_VERSION='2.14.4';
 const demo=new URLSearchParams(location.search).get('demo')==='1';
 let recoveryPending=recoveryFromURL(location.hash);
 const db=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},global:{fetch:connectionFetch(fetch)}});
@@ -508,6 +508,7 @@ function bind(){
  app.querySelectorAll('[data-refresh]').forEach(b=>b.onclick=manualRefresh);if($('#applyUpdate'))$('#applyUpdate').onclick=applyUpdate;app.querySelectorAll('[data-compose]').forEach(b=>b.onclick=()=>openConversation({}));bindWeather();bindItems(app);
  if($('#mobileSummaryBack'))$('#mobileSummaryBack').onclick=()=>{state.mobileExpanded=false;render();};
  bindMobileSlides();
+ bindMobileCalendar();
  bindGlobalSearch();
  if($('#prevMonth')){$('#prevMonth').onclick=()=>changeMonth(addDays(state.month+'-01',-1).slice(0,7));$('#nextMonth').onclick=()=>changeMonth(monthBounds(state.month)[1].slice(0,7));$('#calendarToday').onclick=()=>changeMonth(day().slice(0,7));app.querySelectorAll('[data-day]').forEach(n=>n.onclick=async()=>{const d=n.dataset.day;if(d.slice(0,7)!==state.month)await changeMonth(d.slice(0,7));state.selected=d;state.calendarScope='day';state.calendarPane='day';render();});}
  if($('#calendarMonth'))$('#calendarMonth').onchange=e=>{if(e.target.value)changeMonth(e.target.value);};if($('#exportBtn'))$('#exportBtn').onclick=exportBackup;
@@ -516,7 +517,7 @@ function bind(){
 // One existing set of panels serves both desktop and the mobile swipe track.
 function slideMobilePanel(id,animate=false){
  const track=$('.board-slides');if(!track)return;
- const ids=state.view==='work'?['work','agenda','files']:['work','files'];
+ const ids=state.view==='work'?['work','agenda','files']:['work'];
  const index=Math.max(0,ids.indexOf(id));
  track.scrollTo({left:index*track.clientWidth,behavior:animate&&!matchMedia('(prefers-reduced-motion:reduce)').matches?'smooth':'instant'});
  app.querySelectorAll('.board-panel-tabs button').forEach(b=>b.setAttribute('aria-pressed',String((state.mobileExpanded||state.view!=='work')&&b.dataset.mobilePanel===ids[index])));
@@ -527,7 +528,7 @@ function bindMobileSlides(){
  if(media.matches)slideMobilePanel(state.mobilePanel);
  let frame;
  track.addEventListener('scroll',()=>{if(!media.matches)return;cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{
-  const ids=state.view==='work'?['work','agenda','files']:['work','files'];
+  const ids=state.view==='work'?['work','agenda','files']:['work'];
   const id=ids[Math.round(track.scrollLeft/track.clientWidth)];
   if(!id)return;state.mobilePanel=id;
   app.querySelectorAll('.board-panel-tabs button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mobilePanel===id)));
@@ -537,6 +538,43 @@ function bindMobileSlides(){
  // The app replaces its DOM on refresh; disconnect detached tracks.
  const cleanup=new MutationObserver(()=>{if(!track.isConnected){observer.disconnect();cleanup.disconnect();cancelAnimationFrame(frame);}});
  cleanup.observe(app,{childList:true});
+}
+function bindMobileCalendar(){
+ const calendar=$('.calendar-layout');
+ if(!calendar||!matchMedia('(max-width:900px)').matches)return;
+ calendar.scrollLeft=state.calendarPane==='day'?calendar.clientWidth:0;
+ calendar.addEventListener('scroll',()=>{
+  state.calendarPane=calendar.scrollLeft>calendar.clientWidth/2?'day':'month';
+ },{passive:true});
+ const grid=calendar.querySelector('.calendar-grid');let start=null;
+ grid?.addEventListener('touchstart',e=>{start=e.touches.length===1?{x:e.touches[0].clientX,y:e.touches[0].clientY}:null;},{passive:true});
+ grid?.addEventListener('touchend',e=>{
+  if(!start||!e.changedTouches.length)return;
+  const dx=e.changedTouches[0].clientX-start.x,dy=e.changedTouches[0].clientY-start.y;start=null;
+  if(Math.abs(dx)<65||Math.abs(dx)<Math.abs(dy)*1.6)return;
+  changeMonth(dx<0?monthBounds(state.month)[1].slice(0,7):addDays(state.month+'-01',-1).slice(0,7));
+ },{passive:true});
+ grid?.addEventListener('touchcancel',()=>{start=null;},{passive:true});
+}
+function bindDetailSwipe(){
+ const surface=$('#detail .fixed-item-dialog');if(!surface)return;
+ let start=null;
+ surface.addEventListener('touchstart',e=>{
+  if(!matchMedia('(max-width:900px)').matches||e.touches.length!==1||e.target.closest('textarea,input,select,a,button')){start=null;return;}
+  start={x:e.touches[0].clientX,y:e.touches[0].clientY};
+ },{passive:true});
+ surface.addEventListener('touchend',e=>{
+  if(!start||!e.changedTouches.length)return;
+  const dx=e.changedTouches[0].clientX-start.x,dy=e.changedTouches[0].clientY-start.y;start=null;
+  if(Math.abs(dx)<65||Math.abs(dx)<Math.abs(dy)*1.6)return;
+  const pane=dx<0?'story':'content';
+  const button=$('#detail [data-item-pane="'+pane+'"]');
+  if(!button||button.getAttribute('aria-pressed')==='true'||$('#conversationForm')?.dataset.saving==='true')return;
+  button.click();
+  const next=$('#detail .fixed-item-dialog');
+  if(next&&!matchMedia('(prefers-reduced-motion:reduce)').matches)next.animate([{transform:'translateX('+(dx<0?24:-24)+'px)',opacity:.6},{transform:'translateX(0)',opacity:1}],{duration:180,easing:'ease-out'});
+ },{passive:true});
+ surface.addEventListener('touchcancel',()=>{start=null;},{passive:true});
 }
 function bindItems(root){root.querySelectorAll('[data-task]').forEach(n=>n.onclick=()=>openTask(state.tasks.find(t=>t.id===n.dataset.task)));root.querySelectorAll('[data-event]').forEach(n=>n.onclick=()=>openEvent(state.events.find(e=>e.id===n.dataset.event)));root.querySelectorAll('[data-converse]').forEach(n=>n.onclick=()=>openConversation({}));root.querySelectorAll('[data-message]').forEach(n=>n.onclick=()=>{const m=state.messages.find(x=>x.id===n.dataset.message);if(m)openMessageRecord(m);});root.querySelectorAll('[data-history]').forEach(n=>n.onclick=()=>showHistory([...state.history,...detailHistory].find(h=>String(h.id)===n.dataset.history)));}
 
@@ -596,6 +634,7 @@ function itemHeader(closeId){return `<div class="dialog-head item-dialog-head"><
 function itemTabs(active){return `<nav class="item-tabs" aria-label="업무 상세 화면"><button type="button" data-item-pane="content" aria-pressed="${active==='content'}">업무 내용</button><button type="button" data-item-pane="story" aria-pressed="${active==='story'}">업무 이야기</button></nav>`;}
 function bindItemTabs(){
  const target={...conversationTarget};
+ bindDetailSwipe();
  document.querySelectorAll('[data-item-pane]').forEach(b=>b.onclick=()=>{
   if(b.getAttribute('aria-pressed')==='true')return;
   if($('#conversationForm')?.dataset.saving==='true')return;

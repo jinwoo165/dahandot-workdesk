@@ -673,3 +673,14 @@ dialog>.dialog-body{max-height:calc(92dvh - 160px);overflow-y:auto;overscroll-be
  @keyframes mobile-panel-rise{from{opacity:.7;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 }
 @media(max-width:900px) and (prefers-reduced-motion:reduce){body .unified-board[data-mobile-expanded=true]>.board-slides{animation:none}}
+/* Mobile categories keep only their own content; files remain on the work board. */
+@media(max-width:900px){
+ body .unified-board:not(.has-work) .board-slides>.shared-files{display:none!important}
+ body .unified-board:not(.has-work)>.board-panel-tabs{display:none}
+ body .unified-board:not(.has-work)>.board-slides{padding-bottom:env(safe-area-inset-bottom)}
+ body .unified-board .board-main .calendar-layout{display:flex;width:100%;height:100%;min-height:0;gap:0;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none}
+ body .unified-board .calendar-layout>.month-panel,body .unified-board .calendar-layout>.day-panel{display:flex!important;flex:0 0 100%;width:100%;min-width:100%;height:100%;min-height:0;scroll-snap-align:start;scroll-snap-stop:always}
+ .calendar-layout::-webkit-scrollbar{display:none}
+ #detail .fixed-item-dialog,.calendar-layout .calendar-grid{touch-action:pan-y}
+ .calendar-layout .calendar-legend:after{content:'달력을 좌우로 밀면 이전·다음 달로 이동합니다.';display:block;margin-top:6px;color:var(--green);font-size:11px}
+}
