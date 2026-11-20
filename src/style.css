@@ -684,3 +684,12 @@ dialog>.dialog-body{max-height:calc(92dvh - 160px);overflow-y:auto;overscroll-be
  #detail .fixed-item-dialog,.calendar-layout .calendar-grid{touch-action:pan-y}
  .calendar-layout .calendar-legend:after{content:'달력을 좌우로 밀면 이전·다음 달로 이동합니다.';display:block;margin-top:6px;color:var(--green);font-size:11px}
 }
+/* The month grid never pans vertically; history retains its own scrolling. */
+@media(max-width:900px){
+ body .calendar-layout .month-panel .calendar-scroll{overflow:hidden;overscroll-behavior:none;touch-action:pinch-zoom}
+ body .calendar-layout .month-panel .calendar-grid{flex:1 1 0;min-height:0;touch-action:pinch-zoom;grid-template-rows:22px repeat(6,minmax(0,1fr))}
+ body .calendar-layout .month-panel .day{min-height:0;overflow:hidden;touch-action:pinch-zoom}
+ body .calendar-layout .month-panel .calendar-legend{flex:none}
+ body .calendar-layout .month-panel .panel-head,body .calendar-layout .month-panel .calendar-record-actions{flex:none}
+ body .calendar-layout{overscroll-behavior-y:none}
+}

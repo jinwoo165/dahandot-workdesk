@@ -20,7 +20,7 @@ import {freshKey,isFresh,isUnread,orderedLinks} from './freshness.js';
 import './style.css';
 import './conversation-refresh.css';
 import './updates.css';
-const APP_VERSION='2.14.4';
+const APP_VERSION='2.14.5';
 const demo=new URLSearchParams(location.search).get('demo')==='1';
 let recoveryPending=recoveryFromURL(location.hash);
 const db=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},global:{fetch:connectionFetch(fetch)}});
