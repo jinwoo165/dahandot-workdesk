@@ -666,7 +666,7 @@ dialog>.dialog-body{max-height:calc(92dvh - 160px);overflow-y:auto;overscroll-be
  body .unified-board>.board-slides{order:2;flex:1;min-height:0;height:auto}
  body .unified-board[data-mobile-expanded=true]>.mobile-summary-back{display:block;order:0;flex:none;min-height:32px;padding:4px 10px;text-align:left;color:var(--green);font-size:12px}
  body .work-area:has(.unified-board[data-mobile-expanded=true])>.topbar{display:none}
- body .unified-board[data-mobile-expanded=true]>.board-slides{animation:mobile-panel-rise .2s ease-out}
+ body .unified-board[data-mobile-expanded=true]>.board-slides{animation:none}
  body .unified-search-board{flex:1;height:auto;min-height:0;overflow:hidden}
  body .main>.notice{flex:none;max-height:72px;overflow:auto;margin-bottom:8px}
  .board-slides .panel-scroll,.board-slides .conversation-feed,.board-slides .search-results{overscroll-behavior-y:contain}
@@ -692,4 +692,10 @@ dialog>.dialog-body{max-height:calc(92dvh - 160px);overflow-y:auto;overscroll-be
  body .calendar-layout .month-panel .calendar-legend{flex:none}
  body .calendar-layout .month-panel .panel-head,body .calendar-layout .month-panel .calendar-record-actions{flex:none}
  body .calendar-layout{overscroll-behavior-y:none}
+}
+/* Calendar refresh and month changes must never replay the panel rise animation. */
+@media(max-width:900px){
+ body .unified-board[data-board-view=calendar]>.board-slides{animation:none!important;transform:none!important;overflow-y:clip}
+ body .unified-board[data-board-view=calendar] .calendar-scroll{overflow:clip;overflow-anchor:none}
+ body .unified-board[data-board-view=calendar] .calendar-layout{overflow-anchor:none}
 }
