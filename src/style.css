@@ -125,8 +125,8 @@ body{color:var(--text);background:var(--bg)}a,.text-btn{color:var(--green)}.pane
 .unified-board>.weather-panel{grid-column:2;grid-row:1;min-height:0;height:100%;width:100%;display:flex;flex-direction:column;justify-content:space-between;padding:12px 16px}
 .shared-briefing{grid-column:1;grid-row:1;min-height:0;display:flex;min-width:0}
 .shared-briefing .briefing-expanded{flex:1;height:100%;overflow:auto;margin:0}
-.unified-board>.shared-main{grid-column:1;grid-row:1/3;display:flex;min-height:0;min-width:0;gap:0}
-.unified-board.has-work>.shared-main{grid-row:2}
+.unified-board>.board-slides>.shared-main{grid-column:1;grid-row:1/3;display:flex;min-height:0;min-width:0;gap:0}
+.unified-board.has-work>.board-slides>.shared-main{grid-row:2}
 .shared-files{grid-column:2;grid-row:2;display:flex;min-height:0;min-width:0}
 .work-columns{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:var(--board-gap);height:100%;min-height:0;min-width:0;flex:1}
 .work-agenda{min-height:0;min-width:0;display:flex}
@@ -180,12 +180,12 @@ body{color:var(--text);background:var(--bg)}a,.text-btn{color:var(--green)}.pane
  .board-panel-tabs{display:flex;order:2;flex:0 0 44px;min-height:44px;gap:4px;padding:3px;background:var(--surface);border:1px solid var(--line);border-radius:8px;position:sticky;top:0;z-index:2}
  .board-panel-tabs button{flex:1;min-width:0;border:0;background:transparent;border-radius:6px;font-size:12px;color:var(--muted)}
  .board-panel-tabs button[aria-pressed=true]{background:var(--soft);color:var(--green);font-weight:700}
- .unified-board>.shared-main,.shared-files{order:3;flex:1 0 380px;min-height:380px;width:100%;display:flex}
+ .unified-board>.board-slides>.shared-main,.shared-files{order:3;flex:1 0 380px;min-height:380px;width:100%;display:flex}
  .work-columns{display:flex;flex:1;min-height:0}
  .work-agenda{width:100%;flex:1;min-height:0}
- .unified-board[data-mobile-panel=work]>.shared-files,.unified-board[data-mobile-panel=work] .work-agenda,.unified-board[data-mobile-panel=agenda]>.shared-files,.unified-board[data-mobile-panel=agenda] #viewBody,.unified-board[data-mobile-panel=files]>.shared-main{display:none}
- .unified-board.has-work[data-mobile-panel=agenda]>.shared-main{display:flex}
- .unified-board[data-mobile-panel=work]>.shared-main{display:flex}
+ .unified-board[data-mobile-panel=work]>.board-slides>.shared-files,.unified-board[data-mobile-panel=work] .work-agenda,.unified-board[data-mobile-panel=agenda]>.board-slides>.shared-files,.unified-board[data-mobile-panel=agenda] #viewBody,.unified-board[data-mobile-panel=files]>.board-slides>.shared-main{display:none}
+ .unified-board.has-work[data-mobile-panel=agenda]>.board-slides>.shared-main{display:flex}
+ .unified-board[data-mobile-panel=work]>.board-slides>.shared-main{display:flex}
  .unified-board .calendar-layout{height:100%;min-height:380px}
  .unified-board .weather-content{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:center}
  .unified-board .weather-now{width:auto;min-width:0;padding:5px 0;min-height:44px}
@@ -223,7 +223,7 @@ body{color:var(--text);background:var(--bg)}a,.text-btn{color:var(--green)}.pane
  .unified-board .panel-head{padding:12px}
  .unified-board .panel-head .text-btn,.link-action{min-height:44px;min-width:44px}
  .unified-board .calendar-layout{min-height:410px}
- .unified-board>.shared-main:has(.calendar-layout){min-height:410px;flex-basis:410px}
+ .unified-board>.board-slides>.shared-main:has(.calendar-layout){min-height:410px;flex-basis:410px}
  .scenic-banner button{min-width:32px;min-height:32px;width:32px;height:32px}
  .managed-link{padding:0 12px;gap:8px}
 }
@@ -256,7 +256,7 @@ body{color:var(--text);background:var(--bg)}a,.text-btn{color:var(--green)}.pane
 .title-row .weather-credit{display:flex;flex-wrap:nowrap;gap:5px;font-size:9px;line-height:1.3;margin:0}
 .title-row .weather-empty{padding:2px 0;height:auto;min-height:36px;display:flex;align-items:center;justify-content:space-between;font-size:11px;gap:6px}
 .title-row .weather-empty button{white-space:nowrap}
-.unified-board>.shared-files{grid-row:1/-1}
+.unified-board>.board-slides>.shared-files{grid-row:1/-1}
 .calendar-month-select{font:inherit;font-size:15px;font-weight:600;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:6px;min-width:0;width:145px;max-width:55%;padding:7px 5px;height:36px}
 .calendar-tools{display:flex;align-items:center;gap:4px;flex-shrink:0}
 .calendar-tools .btn,.calendar-tools .icon-btn{min-height:34px;padding:5px 8px}
@@ -337,7 +337,7 @@ body{color:var(--text);background:var(--bg)}a,.text-btn{color:var(--green)}.pane
  .has-work>.shared-briefing{flex:0 0 104px;min-height:0;height:104px;overflow:hidden}
  .has-work .shared-briefing .briefing-expanded{height:100%;overflow:auto;flex:1;padding:10px 12px}
  .has-work>.board-panel-tabs{position:static;flex:0 0 42px;min-height:42px}
- .unified-board.has-work>.shared-main,.unified-board.has-work>.shared-files{flex:1 1 0;min-height:0;overflow:hidden}
+ .unified-board.has-work>.board-slides>.shared-main,.unified-board.has-work>.board-slides>.shared-files{flex:1 1 0;min-height:0;overflow:hidden}
  .has-work .work-columns,.has-work .work-agenda,.has-work #viewBody{height:100%;min-height:0}
  .has-work .task-filter-hint{display:none}
  .has-work .filters{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);padding:7px 10px}
@@ -487,7 +487,7 @@ dialog>.dialog-body{max-height:calc(92dvh - 160px);overflow-y:auto;overscroll-be
 @media(max-width:1150px){
  .unified-board{overflow:hidden;min-height:0;padding:0}
  .unified-board>.board-panel-tabs{position:static;flex:0 0 42px;min-height:42px}
- .unified-board>.shared-main,.unified-board>.shared-files,.unified-board>.shared-main:has(.calendar-layout){flex:1 1 0;min-height:0;overflow:hidden}
+ .unified-board>.board-slides>.shared-main,.unified-board>.board-slides>.shared-files,.unified-board>.board-slides>.shared-main:has(.calendar-layout){flex:1 1 0;min-height:0;overflow:hidden}
  .unified-board #viewBody,.unified-board .calendar-layout{height:100%;min-height:0}
 }
 
@@ -595,3 +595,56 @@ dialog>.dialog-body{max-height:calc(92dvh - 160px);overflow-y:auto;overscroll-be
 #sourceRequestText{width:100%;margin-top:12px;resize:vertical;line-height:1.6}
 
 .weather-refresh.is-loading{animation:weather-refresh-spin 1s linear infinite}.weather-empty>span{min-width:0;font-size:11px}.weather-credit .weather-refresh{margin-left:auto;margin-right:6px;min-height:22px;line-height:1;padding:0 3px}.weather-credit{align-items:center}@keyframes weather-refresh-spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.weather-refresh.is-loading{animation:none}}
+.board-slides{display:contents}
+/* Mobile reading layout: full summary, then one swipeable panel per screen. */
+@media(max-width:900px){
+ html body{height:auto;overflow-y:auto;overflow-x:hidden}
+ body .layout{height:auto;min-height:100dvh;overflow:visible}
+ body .sidebar{position:sticky;top:0;z-index:5;height:auto;flex:none;background:var(--surface)}
+ body .mobile-brand{height:66px;padding:8px 14px;gap:8px}
+ .mobile-brand .brand{font-size:0;gap:0}
+ .mobile-brand .brand>span:last-child{display:none}
+ .mobile-brand .mark{width:34px;height:34px;font-size:23px}
+ body .mobile-brand #mobileView{flex:1;width:auto;min-width:0;max-width:none;font-size:22px;font-weight:750;letter-spacing:-.7px;min-height:48px;padding:8px 28px 8px 10px;border:0;background-color:transparent;color:var(--text)}
+ body .work-area{height:auto;min-height:0;overflow:visible;display:block}
+ body .topbar{height:auto;min-height:48px;padding:7px 14px;position:relative;flex:none}
+ .topbar .today-label{display:none}
+ body .topbar-actions{width:100%;justify-content:space-between;gap:6px;flex-wrap:wrap}
+ body .main{display:block;height:auto;min-height:0;max-height:none;overflow:visible;padding:14px 12px 24px;width:100%}
+ body .main>.title-row{display:none!important}
+ body .unified-board,body .unified-board.has-work{display:flex;flex-direction:column;height:auto;min-height:0;overflow:visible;gap:12px;padding:0}
+ body .unified-board>.shared-briefing,body .unified-board[data-mobile-panel=files]>.shared-briefing{display:block;order:0;flex:none;height:auto;min-height:0;overflow:visible}
+ body .has-work .shared-briefing .briefing-expanded{display:flex;height:auto;min-height:0;max-height:none;overflow:visible;padding:18px 16px;gap:10px}
+ .shared-briefing .briefing-content{height:auto;min-height:0;overflow:visible;width:100%}
+ .shared-briefing .briefing-heading{align-items:flex-start;flex-wrap:wrap;gap:5px}
+ .shared-briefing .briefing-heading b{font-size:17px}
+ .shared-briefing .briefing-heading small{font-size:11px}
+ body .shared-briefing .briefing-lines{display:grid;height:auto;max-height:none;overflow:visible;flex:none;gap:14px;margin-top:14px;-webkit-line-clamp:unset}
+ body .shared-briefing .briefing-lines li{font-size:15px;line-height:1.8;overflow:visible;-webkit-line-clamp:unset}
+ .shared-briefing .briefing-lines li>span{white-space:normal;overflow:visible;display:block;-webkit-line-clamp:unset;overflow-wrap:anywhere}
+ .shared-briefing .briefing-tools{margin-top:12px}
+ .shared-briefing .briefing-tools button{min-height:32px;font-size:12px}
+ body .unified-board>.board-panel-tabs{order:1;position:sticky;top:114px;z-index:4;flex:none;min-height:48px;margin:0;background:var(--surface);border-radius:10px}
+ .board-panel-tabs button{font-size:14px!important;min-height:40px}
+ body .unified-board>.board-slides{display:flex;order:2;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none;width:100%;height:calc(100dvh - 186px);min-height:360px;gap:0}
+ .board-slides::-webkit-scrollbar{display:none}
+ body .unified-board .board-slides>.shared-main,body .unified-board .board-slides .work-columns{display:contents!important}
+ body .unified-board .board-slides #viewBody,body .unified-board .board-slides .work-agenda,body .unified-board .board-slides>.shared-files{display:flex!important;flex:0 0 100%;width:100%;min-width:100%;height:100%;min-height:0;overflow:hidden;scroll-snap-align:start;scroll-snap-stop:always;order:initial}
+ .board-slides #viewBody{flex-direction:column}
+ body .unified-board .calendar-layout{height:100%;min-height:0}
+ body .unified-board .panel-head{padding:16px;flex-wrap:wrap;gap:8px}
+ body .unified-board .panel-head h2{font-size:18px}
+ body .task-card{padding:18px 15px;gap:9px;grid-template-columns:24px minmax(0,1fr) 10px}
+ body .task-title,body .unified-board .agenda-item strong,body .file-info strong{font-size:16px;line-height:1.65}
+ body .task-note,body .task-meta,body .file-meta,body .file-summary,body .message-card{font-size:14px;line-height:1.75}
+ body .unified-board .agenda-item,body .file-item,body .message-card{padding:16px}
+ body .file-summary{display:block;max-height:none;-webkit-line-clamp:unset;overflow:visible}
+ body .link-card{padding:18px}
+ body .link-card strong{font-size:17px;line-height:1.6}
+ body .link-card span{font-size:14px;line-height:1.7}
+ body .notice{max-height:none;line-height:1.7}
+ body .unified-search-board{height:calc(100dvh - 180px);min-height:480px}
+ body .search-result-open>strong{font-size:16px;line-height:1.6}
+ body .search-result-open>p{font-size:14px;line-height:1.75}
+ body footer{display:flex;margin-top:16px}
+}
