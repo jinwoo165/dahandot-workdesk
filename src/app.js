@@ -26,7 +26,7 @@ import './desktop-ui.css';
 import {createFloatingComposer} from './floating-composer.js';
 import {createBoardMotion} from './board-motion.js';
 import './board-motion.css';
-const APP_VERSION='2.16.4';
+const APP_VERSION='2.16.5';
 const demo=new URLSearchParams(location.search).get('demo')==='1';
 let recoveryPending=recoveryFromURL(location.hash);
 const db=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},global:{fetch:connectionFetch(fetch)}});
