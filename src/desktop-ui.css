@@ -1,4 +1,4 @@
-.pc-only{display:none}
+.pc-only,.floating-compose{display:none}
 @media(min-width:901px){
  :root[data-desktop-theme=red]{--bg:#f5f5f6;--surface:#fff;--soft:#f9ebee;--text:#212121;--muted:#707077;--green:#b7132b;--on-green:#fff;--line:#e4e4e8;--hover:#f7f7f8}
  :root[data-desktop-theme=blue]{--bg:#f2f5f9;--surface:#fff;--soft:#e9f0fb;--text:#202e40;--muted:#617187;--green:#225a9e;--on-green:#fff;--line:#dce4ef;--hover:#f1f5fb}
@@ -16,8 +16,12 @@
  .sidebar .nav button{gap:12px;min-height:42px;padding:10px 12px}
  .sidebar .nav .symbol{display:inline-flex;align-items:center;justify-content:center;width:24px;height:26px;flex-shrink:0}
  .category-icon{display:block;width:24px;height:24px;flex:none}
- body .sidebar-compose{position:relative;border-radius:18px 18px 18px 5px;min-height:48px;margin:20px 10px 8px;gap:9px;font-size:14px}
- .sidebar-compose:after{content:'';position:absolute;bottom:-7px;left:16px;width:13px;height:13px;background:var(--green);clip-path:polygon(0 0,100% 0,0 100%)}
+ .floating-compose:not([hidden]){display:inline-flex;position:fixed;right:auto;bottom:auto;z-index:8;align-items:center;justify-content:center;gap:10px;width:156px;height:60px;padding:0 18px;border:1px solid color-mix(in srgb,var(--green) 80%,white);border-radius:30px 30px 10px 30px;background:var(--green);color:var(--on-green);font-size:15px;font-weight:700;line-height:1;white-space:nowrap;box-shadow:0 8px 26px #0003,0 2px 5px #0002;cursor:grab;user-select:none;touch-action:none}
+ .floating-compose:after{content:'';position:absolute;right:9px;bottom:-7px;width:15px;height:10px;background:var(--green);clip-path:polygon(0 0,100% 0,100% 100%)}
+ .floating-compose:hover{filter:brightness(1.06);box-shadow:0 10px 30px #0004,0 2px 5px #0002}
+ .floating-compose:focus-visible{outline:3px solid var(--green);outline-offset:5px}
+ .floating-compose.is-dragging{cursor:grabbing;box-shadow:0 14px 36px #0005}
+ .floating-compose .category-icon{width:26px;height:26px}
  body .topbar>.workspace-heading{display:inline-flex;flex-shrink:0;white-space:nowrap}
  body .topbar .teaming-label{font-size:15px!important;font-weight:700;color:var(--text)!important;letter-spacing:.01em!important}
  .theme-toggle .theme-swatch{width:14px;height:14px;border-radius:50%;background:var(--green);border:2px solid var(--surface);box-shadow:0 0 0 1px var(--line)}
@@ -36,11 +40,9 @@
 @media(min-width:901px) and (max-height:850px){
  body .sidebar{padding:12px 10px}
  .sidebar-heading{min-height:44px;margin-bottom:8px}
- .sidebar .owner{padding:7px 10px;margin-bottom:4px}
  .sidebar .global-search{margin-bottom:8px}
  .sidebar .nav{gap:2px}
  .sidebar .nav button{min-height:32px;padding:5px 12px}
- body .sidebar-compose{min-height:40px;margin:12px 8px 4px}
  .sidebar .progress-ring{width:60px;height:60px;margin:3px auto}
  .sidebar .progress-ring strong{font-size:21px}
  .sidebar .progress-metrics button{min-height:28px}
