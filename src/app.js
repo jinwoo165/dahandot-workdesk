@@ -24,7 +24,9 @@ import './updates.css';
 import {DESKTOP_THEMES,desktopTheme,desktopThemePicker,desktopSettingsMenu,categoryIcon} from './desktop-ui.js';
 import './desktop-ui.css';
 import {createFloatingComposer} from './floating-composer.js';
-const APP_VERSION='2.16.3';
+import {createBoardMotion} from './board-motion.js';
+import './board-motion.css';
+const APP_VERSION='2.16.4';
 const demo=new URLSearchParams(location.search).get('demo')==='1';
 let recoveryPending=recoveryFromURL(location.hash);
 const db=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},global:{fetch:connectionFetch(fetch)}});
@@ -54,6 +56,7 @@ applyAppearance();desktopMedia.addEventListener('change',()=>{closeDesktopMenus(
 function closeDesktopMenus(){document.querySelectorAll('.desktop-dropdown[open]').forEach(menu=>menu.open=false);}
 document.addEventListener('click',event=>{if(!event.target.closest('.desktop-dropdown'))closeDesktopMenus();});
 document.addEventListener('keydown',event=>{if(event.key==='Escape'){const menu=document.querySelector('.desktop-dropdown[open]');if(menu){event.preventDefault();closeDesktopMenus();menu.querySelector('summary').focus({preventScroll:true});}}});
+const boardMotion=createBoardMotion();
 const floatingComposer=createFloatingComposer({onOpen:()=>openConversation({}),icon:categoryIcon('conversation',day())});
 let weatherAttempt=0,searchComposing=false,searchRequest=0;
 let sceneryPaused=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -279,6 +282,7 @@ function connectionMessage(error,service='login'){
  return authenticationMessage(error,'session');
 }
 function login(message=''){
+ boardMotion.reset();
  floatingComposer.hide();
  if($('#loginForm')){if(message)loginScreen?.feedback(message,true,true);return;}
  if(!LOGIN_CONFIGURED&&!message)message='첫 로그인 연결 설정을 마무리하고 있습니다. 설정 완료 후 접속할 수 있습니다.';
@@ -524,13 +528,14 @@ function applyUpdate(){
  if([...drafts.values()].some(value=>value?.body?.trim())||$('#detail').open||$('#historyDetail').open){toast('작성 중인 대화를 저장하고 열린 창을 닫은 뒤 새 화면을 적용해 주세요.');return;}
  const url=new URL(location.href);url.searchParams.set('v',state.updateAvailable||APP_VERSION);location.assign(url.href);
 }
-async function manualRefresh(){if(await checkForUpdate(true)){applyUpdate();return;}await refresh();}
+async function manualRefresh(){if(state.loading)return;if(await checkForUpdate(true)){applyUpdate();return;}boardMotion.reset();await refresh();}
 
 function render(){
  if(!state.workspace||recoveryPending||searchComposing)return;const searchInput=$('#globalSearch'),searchFocus=document.activeElement===searchInput,selection=searchFocus?[searchInput.selectionStart,searchInput.selectionEnd]:null;app.querySelectorAll('[data-scroll-key]').forEach(n=>{if(n.getClientRects().length)listScrollPositions.set(n.dataset.scrollKey,n.scrollTop);});const oldBoard=$('.unified-board'),boardScroll=oldBoard?.dataset.boardView===state.view?oldBoard.scrollTop:0;const scenery=captureScenery();const sourceOpen=$('#sourcePopover')?.matches(':popover-open')||false;const openMenus=[...app.querySelectorAll('.desktop-dropdown[open]')].map(m=>m.id);infoContent.clear();const v=state.query?['통합 검색','업무·일정·자료·대화에서\n필요한 내용을 찾아보세요.']:views[state.view],isWork=state.view==='work',report=orderedLinks(state.links).find(l=>!l.removed_at&&/주간.*업무보고/.test(l.label)&&/\.pdf(?:[?#]|$)/i.test(l.url));
  const refreshButton=`<button class="brand-refresh" data-refresh aria-label="상태 새로고침" title="상태 새로고침">⟳</button>`;
  const brand=`<button class="brand home-button" data-home aria-label="다한닷 홈 · 오늘 챙길 일"><span class="mark">d.</span><span>다한닷<small>나의 업무보드</small></span></button>`;
  app.innerHTML=`<div class="layout"><aside class="sidebar"><div class="sidebar-heading">${brand}${refreshButton}</div><div id="liveStatus" class="sidebar-live-status">${syncLabel()}</div><div class="mobile-brand">${brand}${refreshButton}<select id="mobileView" aria-label="현재 페이지 · 카테고리 선택">${Object.entries(views).map(([k,v])=>`<option value="${k}" ${state.view===k?'selected':''}>${v[0]}</option>`).join('')}</select><details class="mobile-account-menu"><summary aria-label="도움말과 로그아웃">⋯</summary><div><button data-password>비밀번호 설정</button><button data-help>연결 · 사용 안내</button><button data-logout>로그아웃</button></div></details></div><form id="globalSearchForm" class="global-search" role="search"><label for="globalSearch">통합 검색</label><div class="global-search-input"><span aria-hidden="true">⌕</span><input type="search" id="globalSearch" aria-label="통합 검색" placeholder="업무·일정·자료 검색" autocomplete="off" maxlength="200" value="${esc(state.searchText)}"></div></form><div class="nav-label">MY WORKSPACE</div><nav class="nav">${Object.entries(views).map(([k,v])=>`<button data-view="${k}" class="${!state.query&&state.view===k?'active':''}"><span class="symbol"><span class="mobile-original">${v[2]}</span><span class="pc-only">${categoryIcon(k,day())}</span></span>${v[0]}${navUnread(k)}</button>`).join('')}</nav>${progressCard(state.tasks,Boolean(state.error))}</aside><div class="work-area"><header class="topbar"><span class="workspace-heading"><span class="mobile-original">PERSONAL WORKDESK</span><span class="pc-only teaming-label">AI Teaming</span></span><div class="topbar-actions">${sourceIndicator()}<a class="shortcut chatgpt-shortcut" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer" aria-label="ChatGPT 새 창으로 열기"><img class="brand-icon chatgpt-icon" src="./images/chatgpt.svg" width="22" height="22" alt=""><span>ChatGPT</span></a><a class="shortcut clova-shortcut" href="${esc(safeURL(state.links.find(l=>!l.removed_at&&l.label==='클로바노트')?.url)||CLOVA_URL)}" target="_blank" rel="noopener noreferrer" aria-label="클로바노트 새 창으로 열기"><img class="brand-icon" src="./images/clovanote.svg" width="24" height="24" alt=""><span>클로바노트</span></a>${report?`<a class="shortcut report-shortcut" href="${esc(safeURL(report.url))}" target="_blank" rel="noopener noreferrer">주간보고 PDF ↗</a>`:''}${desktopThemePicker(pcTheme)}<button id="themeToggle" class="theme-toggle" role="switch" aria-checked="${theme==='dark'}" aria-label="다크모드"><span aria-hidden="true">${theme==='dark'?'☀':'☾'}</span><span class="theme-label">${theme==='dark'?'라이트':'다크'}</span></button><small class="today-label">${dateLabel(day())}</small>${desktopSettingsMenu()}<button class="btn primary mobile-compose" data-compose aria-label="대화로 남기기" title="대화로 남기기">＋</button></div></header><main class="main">${demo?'<div class="notice demo-notice">공개용 업무 체험 화면 · 개인 계정 및 실제 업무 데이터와 연결되지 않습니다.</div>':''}${state.error?`<div class="notice error" role="alert">${esc(state.error)}</div>`:''}${state.updateAvailable?'<div class="notice update-notice">새 화면이 준비되었습니다. <button class="text-btn" id="applyUpdate">새 화면 적용 ↻</button></div>':''}${!navigator.onLine?'<div class="notice offline">오프라인 · 인터넷 연결 후 저장하세요.</div>':''}<div class="title-row"><div class="title-copy"><p class="eyebrow">MY WORK, MY PACE</p><h1>${v[0]}</h1><p class="sub">${v[1]}</p></div>${scenicBanner()}<section id="weatherWidget" class="panel weather-panel" aria-label="지역별 오늘 내일 날씨">${weatherWidget()}</section></div>${boardLayout(isWork)}<footer><span>다한닷 · v${APP_VERSION}</span><span>두레이 즐겨찾기 · 일정 30일</span></footer></main></div></div>`;restoreScenery(scenery);if($('.unified-board'))$('.unified-board').scrollTop=boardScroll;bind();applyAppearance();openMenus.forEach(id=>{const menu=document.getElementById(id);if(menu)menu.open=true;});floatingComposer.show((state.user?.id||'demo')+':'+state.workspace.id);bindSourcePopup(sourceOpen);app.querySelectorAll('[data-scroll-key]').forEach(n=>{n.scrollTop=listScrollPositions.get(n.dataset.scrollKey)||0;});if(searchFocus){$('#globalSearch').focus({preventScroll:true});$('#globalSearch').setSelectionRange(...selection);}
+ boardMotion.refresh(app,(state.user?.id||'demo')+':'+state.workspace.id);
 }
 
 async function changeMonth(month){
