@@ -9,6 +9,7 @@
  :root[data-desktop-theme=charcoal]{--bg:#171719;--surface:#242427;--soft:#39272d;--text:#f1f1f3;--muted:#b0b0b8;--green:#ff8291;--on-green:#211619;--line:#414147;--hover:#303035}
  .pc-only{display:inline-flex}.mobile-original{display:none!important}
  body .layout{grid-template-columns:232px minmax(0,1fr)}
+ body .sidebar{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
  .sidebar-heading .brand small,.sidebar .nav-label{display:none}
  .sidebar .global-search{margin-bottom:18px}
  .sidebar .nav{gap:5px}
@@ -32,3 +33,16 @@
  button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline-color:var(--green)}
 }
 @media(min-width:901px) and (max-width:1250px){body .layout{grid-template-columns:208px minmax(0,1fr)}body .topbar-actions{gap:9px}.theme-toggle{padding-inline:8px}.theme-toggle .theme-label{min-width:0}.today-label{display:none}}
+@media(min-width:901px) and (max-height:850px){
+ body .sidebar{padding:12px 10px}
+ .sidebar-heading{min-height:44px;margin-bottom:8px}
+ .sidebar .owner{padding:7px 10px;margin-bottom:4px}
+ .sidebar .global-search{margin-bottom:8px}
+ .sidebar .nav{gap:2px}
+ .sidebar .nav button{min-height:32px;padding:5px 12px}
+ body .sidebar-compose{min-height:40px;margin:12px 8px 4px}
+ .sidebar .progress-ring{width:60px;height:60px;margin:3px auto}
+ .sidebar .progress-ring strong{font-size:21px}
+ .sidebar .progress-metrics button{min-height:28px}
+ .sidebar .sidebar-bottom{padding-top:10px}
+}

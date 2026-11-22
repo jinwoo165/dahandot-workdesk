@@ -23,7 +23,7 @@ import './conversation-refresh.css';
 import './updates.css';
 import {DESKTOP_THEMES,desktopTheme,nextDesktopTheme,categoryIcon} from './desktop-ui.js';
 import './desktop-ui.css';
-const APP_VERSION='2.16.0';
+const APP_VERSION='2.16.1';
 const demo=new URLSearchParams(location.search).get('demo')==='1';
 let recoveryPending=recoveryFromURL(location.hash);
 const db=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},global:{fetch:connectionFetch(fetch)}});
