@@ -58,11 +58,11 @@ export function eventDetailContent(event,conversationHTML=''){
   dates=[['일시',(first===last?dateLabel(first):`${dateLabel(first)} ~ ${dateLabel(last)}`)+' · 종일']];
  }else dates=[['시작',kstTime(event.start_at)],['종료',kstTime(event.end_at)]];
  const meta=[...dates,['캘린더',event.source]].filter(([,value])=>value);
- return `<div class="task-detail-status"><span class="badge">${esc(status)}</span>${event.excluded?'<span class="badge">내 업무보드에서 제외됨</span>':event.personal_changed?'<span class="badge">내 일정 조정</span>':''}</div>
+ return `<div class="task-detail-status"><span class="badge">${esc(status)}</span>${event.excluded?'<span class="badge">내 티밍에서 제외됨</span>':event.personal_changed?'<span class="badge">내 일정 조정</span>':''}</div>
  <h2 class="task-detail-title">${esc(event.title)}</h2>
  ${conversationHTML}
  <dl class="task-detail-meta">${meta.map(([label,value])=>`<div><dt>${label}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl>
- <section class="task-detail-section"><h3>내용</h3>${event.note?`<div class="linked-copy">${linkedText(event.note)}</div>`:'<p class="task-detail-empty">업무보드에 등록된 추가 내용이 없습니다.</p>'}</section>
+ <section class="task-detail-section"><h3>내용</h3>${event.note?`<div class="linked-copy">${linkedText(event.note)}</div>`:'<p class="task-detail-empty">티밍에 등록된 추가 내용이 없습니다.</p>'}</section>
  ${event.personal_note?`<section class="task-detail-section"><h3>내 메모</h3><div class="linked-copy">${linkedText(event.personal_note)}</div></section>`:''}
  <section class="task-detail-section"><h3>원문</h3><p class="task-source-help">원문을 누르면 전체 내용을 새 탭에서 볼 수 있습니다.</p>${sourceReferencesHTML(event.url?[{label:'일정 원문',url:event.url}]:[])}</section>`;
 }
