@@ -31,7 +31,7 @@ import './visual-motion.css';
 import './login-story.css';
 import {bindDialogDismiss} from './dialog-dismiss.js';
 document.querySelectorAll('dialog').forEach(bindDialogDismiss);
-const APP_VERSION='2.17.3';
+const APP_VERSION='2.17.4';
 const demo=new URLSearchParams(location.search).get('demo')==='1';
 let recoveryPending=recoveryFromURL(location.hash);
 const db=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},global:{fetch:connectionFetch(fetch)}});

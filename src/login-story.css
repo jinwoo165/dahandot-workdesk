@@ -1,5 +1,5 @@
 .login-story h1{font-size:clamp(30px,3.3vw,48px);line-height:1.38;word-break:keep-all}
-.login-story .teaming-intro,.login-story .teaming-next{display:block;color:var(--muted);word-break:keep-all;overflow-wrap:anywhere}
-.login-story .teaming-intro{font-size:16px;line-height:1.9;margin-top:24px}
-.login-story .teaming-next{font-size:13px;line-height:1.8;border-top:1px solid var(--line);padding-top:20px;margin-top:32px}
-@media(max-width:760px){.login-story h1{font-size:clamp(26px,6.8vw,32px);letter-spacing:-1px}.login-story .teaming-intro{font-size:14px;margin-top:16px}.login-story .teaming-next{font-size:12px;margin-top:20px;padding-top:14px}}
+.login-story .teaming-intro,.login-story .teaming-next{display:block;color:var(--muted);font-size:16px;font-weight:400;line-height:1.9;word-break:keep-all;overflow-wrap:anywhere}
+.login-story .teaming-intro{margin-top:24px}
+.login-story .teaming-next{margin-top:32px}
+@media(max-width:760px){.login-story h1{font-size:clamp(26px,6.8vw,32px);letter-spacing:-1px}.login-story .teaming-intro{margin-top:16px}.login-story .teaming-next{margin-top:20px}}
