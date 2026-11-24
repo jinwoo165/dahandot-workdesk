@@ -1,4 +1,7 @@
 .motion-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media(min-width:901px){
  .work-progress [data-count-to]{display:inline-block;min-width:calc(var(--count-digits)*1ch);font-variant-numeric:tabular-nums;text-align:center}
+ .motion-digit{display:inline-block;position:relative;width:1ch;height:1.15em;line-height:1.15em;overflow:hidden;vertical-align:bottom}
+ .motion-digit-track{display:flex;flex-direction:column;line-height:1.15em}
+ .motion-digit-track>span{display:block;flex:none;height:1.15em;line-height:1.15em}
 }

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {IntroTimeline,PROGRESS_DURATION,progressDuration,progressFrame,ringFrame} from '../src/board-motion.js';
+import {IntroTimeline,PROGRESS_DURATION,progressDuration,progressFrame,ringFrame,rollingPositions} from '../src/board-motion.js';
 
 test('completion determines duration: 100% five seconds, 50% 2.5 seconds, 10% half a second',()=>{
  assert.equal(PROGRESS_DURATION,5000);
@@ -62,4 +62,11 @@ test('a fresh page or explicit reset starts a new introduction',()=>{
  const reloaded=new IntroTimeline(progressDuration(10));
  assert.equal(reloaded.sample('counts',25000),0);
  assert.equal(reloaded.sample('counts',25500),1);
+});
+test('rolling digits carry together at 09 and 99, then end at the actual value',()=>{
+ assert.deepEqual(rollingPositions(20,9.5/20),[.5,9.5]);
+ assert.deepEqual(rollingPositions(200,99.5/200),[.5,9.5,9.5]);
+ assert.deepEqual(rollingPositions(79,1),[7,9]);
+ assert.deepEqual(rollingPositions(0,.5),[0]);
+ assert.deepEqual(rollingPositions(14,0),[0,0]);
 });
