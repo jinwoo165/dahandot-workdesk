@@ -48,7 +48,7 @@ export function authDestination(event,session,recoveryPending=false){
  return event==='PASSWORD_RECOVERY'||recoveryPending?'password':'board';
 }
 
-export function loginShell(content){return `<div class="login-wrap"><section class="login-story"><div class="brand"><span class="mark">d.</span><span>AI Teaming</span></div><h1>내 일을 아는 나와,<br>생각을 넓혀주는 AI.</h1><p class="teaming-intro">내 일의 맥락을 함께 이해하고,<br>사람과 AI가 서로의 판단을 이어갑니다.</p><p class="teaming-next">함께 다음 행동을 정하고,<br>그 이유와 진행 과정을 남겨 다음 일로 연결합니다.</p></section><section class="login-panel"><div class="login-card">${content}</div></section></div>`;}
+export function loginShell(content){return `<div class="login-wrap"><section class="login-story"><div class="brand"><span class="mark">d.</span><span>AI Teaming</span></div><h1>내 일의 맥락을 함께 이해하고,<br>사람과 AI가 서로의 판단을 이어갑니다.</h1><p class="teaming-intro">내 일을 아는 나와, 생각을 넓혀주는 AI.</p><p class="teaming-next">함께 다음 행동을 정하고,<br>판단의 이유와 진행 과정을 남겨 다음 일로 연결합니다.</p></section><section class="login-panel"><div class="login-card">${content}</div></section></div>`;}
 
 export function mountLogin(root,{actions,configured=true,onSession,onRetry,message=''}){
  let mode='password',busy=false,email='',ownedFeedback=false;
