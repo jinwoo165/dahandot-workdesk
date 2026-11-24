@@ -5,6 +5,8 @@ const EASE='cubic-bezier(.22,1,.36,1)';
 const NAV_DURATION=360;
 const REVEAL_DURATION=725;
 const INTRO_END=2900;
+const CARD_DURATION=680;
+const PANEL_SELECTORS={main:'#viewBody>.panel,#viewBody>.calendar-layout>.panel,.unified-search-panel',agenda:'.work-agenda>.agenda-panel',files:'.shared-files>.files-panel',briefing:'.shared-briefing>.briefing'};
 export function visualChange(previous,next){
  if(!previous||previous.scope!==next.scope)return 'intro';
  if(previous.view!==next.view)return 'page';
@@ -123,7 +125,8 @@ export function createVisualMotion({window:win=window}={}){
   captured={
    marker:n&&m?{x:m.left-n.left,y:m.top-n.top,width:m.width,height:m.height}:null,
    focus:focus?(focus.dataset.view?['data-view',focus.dataset.view]:['data-task-filter',focus.dataset.taskFilter]):null,
-   sidebarScroll:nextRoot.querySelector('.sidebar')?.scrollTop||0
+   sidebarScroll:nextRoot.querySelector('.sidebar')?.scrollTop||0,
+   filesVisible:Boolean(nextRoot.querySelector(PANEL_SELECTORS.files)?.getClientRects().length)
   };
   hideTip();
  }
@@ -147,11 +150,11 @@ export function createVisualMotion({window:win=window}={}){
  }
  function reveal(){
   if(!sequence||reduced.matches)return;
-  const {kind,start}=sequence;
+  const {kind,start,targets,mobileChanged,filesVisible}=sequence;
   const now=win.performance.now();if(now-start>(kind==='intro'?INTRO_END:1500)){sequence=null;return;}
   const rise=[{opacity:0,transform:`perspective(1000px) translateY(${desktop.matches?46:24}px) rotateX(${desktop.matches?7:0}deg) scale(.93)`,filter:'blur(4px)',offset:0},{opacity:1,transform:'perspective(1000px) translateY(-4px) rotateX(0deg) scale(1.012)',filter:'blur(0px)',offset:.78},{opacity:1,transform:'perspective(1000px) translateY(0) rotateX(0deg) scale(1)',filter:'blur(0px)',offset:1}];
-  const cards=(selector,delay)=>root.querySelectorAll(selector).forEach(node=>animate(node,rise,680,delay,start));
-  const rows=(selector,delay,step=90)=>[...root.querySelectorAll(selector)].filter(node=>node.getClientRects().length).slice(0,6).forEach((node,index)=>animate(node,[{opacity:0,transform:`translateX(${desktop.matches?38:22}px) scale(.96)`,filter:'blur(3px)'},{opacity:1,transform:'translateX(0) scale(1)',filter:'blur(0px)'}],520,delay+index*step,start));
+  // A card and its text enter as one surface. Never animate list rows again inside it.
+  const cards=(selector,delay)=>root.querySelectorAll(selector).forEach((node,index)=>animate(node,rise,CARD_DURATION,delay+index*90,start));
   if(kind==='intro'){
    void screen.open({start,duration:REVEAL_DURATION});
    if(desktop.matches){
@@ -161,31 +164,42 @@ export function createVisualMotion({window:win=window}={}){
     const selected=Math.max(0,buttons.findIndex(button=>button.classList.contains('active')));
     animate(root.querySelector('.motion-nav-indicator'),[{opacity:0},{opacity:1}],550,460+selected*120,start);
    }
-   // Panels begin after the circle has exposed their area; list rows follow their panel.
+   // Keep the strong first entrance, with the same motion for every card and its text.
    cards('.title-copy',430);cards('.scenic-banner',550);cards('.weather-panel',670);
-   cards('.shared-briefing',850);cards('#viewBody>.panel,#viewBody>.calendar-layout>.panel',1040);
-   cards('.work-agenda>.agenda-panel',1240);cards('.shared-files>.files-panel',1420);cards('.work-progress',1050);
-   rows('#viewBody .panel-scroll>.task-card,#viewBody .panel-scroll>.link-card,#viewBody .panel-scroll>.message-card',1260,75);
-   rows('.work-agenda .agenda-item',1470);rows('.shared-files .file-card',1640,75);
+   cards('.shared-briefing',850);cards(PANEL_SELECTORS.main,1040);
+   cards(PANEL_SELECTORS.agenda,1130);cards(PANEL_SELECTORS.files,1220);cards('.work-progress',1050);
   }else if(kind==='page'){
    animate(root.querySelector('.title-copy'),[{opacity:.2,transform:'translateY(6px)'},{opacity:1,transform:'translateY(0)'}],240,0,start);
-   const body=root.querySelector('.unified-search-panel')||root.querySelector('#viewBody');
-   animate(body,[{opacity:.2,transform:`translateX(${desktop.matches?16:6}px)`},{opacity:1,transform:'translateX(0)'}],340,0,start);
-   cards('.shared-briefing',60);cards('.work-agenda>.agenda-panel',170);
-   rows('.work-agenda .agenda-item',300);
-  }
-  if(kind!=='intro'){
-   const target=!desktop.matches&&previous.mobilePanel==='agenda'?'.work-agenda':!desktop.matches&&previous.mobilePanel==='files'?'.shared-files':'#viewBody';
-   const selector=target+' .panel-scroll>:is(.task-card,.link-card,.message-card,.agenda-item,.file-card,.hidden-item)';
-   if(root.querySelector(selector))rows(selector,kind==='page'?100:0,65);
-   else if(kind==='content')animate(root.querySelector(target),[{opacity:.25,translate:'0 16px'},{opacity:1,translate:'0 0'}],380,0,start);
+   cards('.shared-briefing',0);cards(PANEL_SELECTORS.main,90);cards(PANEL_SELECTORS.agenda,180);
+   if(filesVisible&&desktop.matches){
+    // This shared card stays readable and still. A single border pulse acknowledges navigation.
+    animate(root.querySelector(PANEL_SELECTORS.files),[
+     {borderColor:'var(--line)',offset:0},
+     {borderColor:'color-mix(in srgb,var(--green) 38%,var(--line))',offset:.38},
+     {borderColor:'var(--line)',offset:1}
+    ],CARD_DURATION,90,start);
+   }else cards(PANEL_SELECTORS.files,270);
+  }else if(kind==='content'){
+   for(const target of targets){
+    if(mobileChanged){cards(PANEL_SELECTORS[target],0);continue;}
+    // Filters replace one list as a group; common cards and unchanged text stay in place.
+    root.querySelectorAll(PANEL_SELECTORS[target]).forEach(panel=>{
+     const content=panel.querySelector('.panel-scroll')||panel.querySelector('.calendar-scroll')||panel.querySelector('.briefing-lines');
+     animate(content,[{opacity:.25,transform:'translateY(12px)'},{opacity:1,transform:'translateY(0)'}],360,0,start);
+    });
+   }
   }
  }
  function refresh(nextRoot,next){
   bindTips(nextRoot);root=nextRoot;stop();
   root.classList.add('visual-motion-ready');
   const kind=visualChange(previous,next);
-  if(kind){sequence={kind,start:win.performance.now()};if(kind==='intro'){navKey=null;navTravel=null;if(captured)captured.marker=null;}}
+  if(kind){
+   const mobileChanged=!desktop.matches&&(previous?.mobilePanel!==next.mobilePanel||previous?.mobileExpanded!==next.mobileExpanded);
+   const targets=mobileChanged?[next.mobilePanel==='work'?'main':next.mobilePanel]:Object.keys(PANEL_SELECTORS).filter(key=>previous?.panels?.[key]!==next.panels?.[key]);
+   sequence={kind,start:win.performance.now(),targets,mobileChanged,filesVisible:captured?.filesVisible};
+   if(kind==='intro'){navKey=null;navTravel=null;if(captured)captured.marker=null;}
+  }
   previous={...next};
   const sidebar=root.querySelector('.sidebar');if(sidebar&&captured)sidebar.scrollTop=captured.sidebarScroll;
   moveSelection();
