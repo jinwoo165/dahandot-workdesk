@@ -40,7 +40,7 @@ test('history previews distinguish current conversations from historical snapsho
  assert.match(preview,/이 업무의 현재 대화 이력/);assert.match(preview,/이력 보고 이어 쓰기/);
  assert.match(preview,/&lt;img/);assert.doesNotMatch(preview,/<img/);assert.match(preview,/…/);
  const thread=conversationThread([unsafe]);
- assert.match(thread,/나눈 이야기/);assert.match(thread,/반영 완료/);assert.match(thread,/남은 답변 확인/);
+ assert.match(thread,/나눈 이야기/);assert.match(thread,/답변 기록/);assert.match(thread,/남은 답변 확인/);
  assert.ok(thread.includes('가'.repeat(240)));assert.doesNotMatch(thread,/<img/);
 });
 test('thread is chronological and full saved text replaces the empty prompt',()=>{

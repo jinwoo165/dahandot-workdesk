@@ -3,6 +3,7 @@ import {SUPABASE_URL,SUPABASE_KEY,LOGIN_CONFIGURED} from './config.js';
 import {statuses,day,addDays,monthBounds,kstTime,escapeHTML as esc,safeURL,needsAttention,matchesTask,eventOnDay,currentBriefing,dateLabel,upcomingEvents} from './model.js';
 import {messageStatuses,messageTargets,validateMessage,messagesForTarget,mergeCalendarOverrides,mergeSavedMessages,persistConversation} from './conversations.js';
 import {conversationBadge,conversationPreview,conversationThread,conversationTurn} from './conversation-ui.js';
+import {openEvidenceKeys,restoreEvidenceKeys} from './work-evidence-ui.js';
 import {WEATHER_CITIES,weatherPageIndex,degrees,weatherDescription,fetchAllWeather,RECENT_FILES_LIMIT,fileKind} from './widgets.js';
 import {sourceHealth,collectionSummary} from './source-health.js';
 import {summaryForFile} from './file-summaries.js';
@@ -20,6 +21,7 @@ import {freshKey,isFresh,isUnread,orderedLinks} from './freshness.js';
 import {UserSync} from './user-sync.js';
 import './style.css';
 import './conversation-refresh.css';
+import './work-context.css';
 import './updates.css';
 import {DESKTOP_THEMES,desktopTheme,desktopThemePicker,desktopSettingsMenu,categoryIcon} from './desktop-ui.js';
 import './desktop-ui.css';
@@ -33,7 +35,7 @@ import './theme-transition.css';
 import './login-story.css';
 import {bindDialogDismiss} from './dialog-dismiss.js';
 document.querySelectorAll('dialog').forEach(bindDialogDismiss);
-const APP_VERSION='2.17.6';
+const APP_VERSION='2.17.7';
 const demo=new URLSearchParams(location.search).get('demo')==='1';
 let recoveryPending=recoveryFromURL(location.hash);
 const db=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},global:{fetch:connectionFetch(fetch)}});
@@ -336,6 +338,7 @@ function calendarView(){
 function guideSections(){
  const latest=state.runs[0],sections=[
  ['업무 상태와 대화','저장한 대화·완료·메모는 기기 간 동기화됩니다. 다한닷은 다음 정기 갱신 또는 ChatGPT에서 “티밍 대화 반영해줘”라고 요청할 때 대화를 읽고 상태·남은 일·다음 확인일을 정리합니다. 즉시 AI 답변 기능은 연결되어 있지 않습니다.'],
+ ['현재 맥락 · 근거와 반영 내역','업무 내용의 현재 맥락에서 남은 일·다음 행동·메모와 그 업무에 이어진 대화를 함께 확인합니다. AI 답변 아래 근거와 반영 내역을 열면 실제로 저장된 반영 전·후 값이 보입니다. 답변 기록은 업무 변경과 구분하며, 확인 대기인 이야기는 아직 업무에 반영되지 않았습니다. 연결된 자료는 해당 업무의 원문이며 이번 답변이 참조한 근거는 답변 내용에서 확인합니다.'],
  ['두레이 즐겨찾기 · 한 달 일정','대화방은 갱신 때마다 두레이 즐겨찾기 목록을 다시 확인합니다. 고정 대화방 목록은 사용하지 않습니다. 두레이·Google 일정은 오늘부터 30일을 조회하고, 주간업무보고는 전주 실시 / 금주 예정으로 작성합니다. 즐겨찾기를 해제한 방의 기존 실제 업무·이력은 보존됩니다.'],
  ['원본 조회 시간','평일 오후 1시에 원본을 조회합니다(한국 공휴일 제외). 오전에는 두레이 로그인 후 ChatGPT에서 “티밍 갱신해줘”라고 요청하세요. 로그인 순간을 자동 감지하는 연결은 아직 없습니다. 상태 새로고침은 이미 수집된 자료와 저장 상태를 불러옵니다.'],
  ['완료 · 부분 완료 · 일정 변경','“끝났어”, “답변만 기다려”, “이번 일정은 빼줘”처럼 이야기하세요. 완료한 일은 일반 안내에서 제외합니다. 날짜를 누르면 당시 메모와 완료 이력을 볼 수 있습니다. 일정 변경·제외는 이 보드의 개인 표시 기준이며 원본 일정이나 타인 초대를 자동 변경하지 않습니다.'],
@@ -541,10 +544,12 @@ function applyUpdate(){
 async function manualRefresh(){if(state.loading)return;if(await checkForUpdate(true)){applyUpdate();return;}boardMotion.reset();visualMotion.reset();await refresh();}
 
 function render(){
+ const evidenceOpen=openEvidenceKeys(app);
  if(!state.workspace||recoveryPending||searchComposing)return;visualMotion.capture(app);const searchInput=$('#globalSearch'),searchFocus=document.activeElement===searchInput,selection=searchFocus?[searchInput.selectionStart,searchInput.selectionEnd]:null;app.querySelectorAll('[data-scroll-key]').forEach(n=>{if(n.getClientRects().length)listScrollPositions.set(n.dataset.scrollKey,n.scrollTop);});const oldBoard=$('.unified-board'),boardScroll=oldBoard?.dataset.boardView===state.view?oldBoard.scrollTop:0;const scenery=captureScenery();const sourceOpen=$('#sourcePopover')?.matches(':popover-open')||false;const openMenus=[...app.querySelectorAll('.desktop-dropdown[open]')].map(m=>m.id);infoContent.clear();const v=state.query?['통합 검색','업무·일정·자료·대화에서\n필요한 내용을 찾아보세요.']:views[state.view],isWork=state.view==='work',report=orderedLinks(state.links).find(l=>!l.removed_at&&/주간.*업무보고/.test(l.label)&&/\.pdf(?:[?#]|$)/i.test(l.url));
  const refreshButton=`<button class="brand-refresh" data-refresh aria-label="상태 새로고침" title="상태 새로고침">⟳</button>`;
  const brand=`<button class="brand home-button" data-home aria-label="다한닷 홈 · 오늘 챙길 일"><span class="mark">d.</span><span>다한닷<small>나의 티밍</small></span></button>`;
  app.innerHTML=`<div class="layout"><aside class="sidebar"><div class="sidebar-heading">${brand}${refreshButton}</div><div id="liveStatus" class="sidebar-live-status">${syncLabel()}</div><div class="mobile-brand">${brand}${refreshButton}<select id="mobileView" aria-label="현재 페이지 · 카테고리 선택">${Object.entries(views).map(([k,v])=>`<option value="${k}" ${state.view===k?'selected':''}>${v[0]}</option>`).join('')}</select><details class="mobile-account-menu"><summary aria-label="도움말과 로그아웃">⋯</summary><div><button data-password>비밀번호 설정</button><button data-help>연결 · 사용 안내</button><button data-logout>로그아웃</button></div></details></div><form id="globalSearchForm" class="global-search" role="search"><label for="globalSearch">통합 검색</label><div class="global-search-input"><span aria-hidden="true">⌕</span><input type="search" id="globalSearch" aria-label="통합 검색" placeholder="업무·일정·자료 검색" autocomplete="off" maxlength="200" value="${esc(state.searchText)}"></div></form><div class="nav-label">MY WORKSPACE</div><nav class="nav">${Object.entries(views).map(([k,v])=>`<button data-view="${k}" data-motion-tip="${esc(v[1])}" class="${!state.query&&state.view===k?'active':''}"><span class="symbol"><span class="mobile-original">${v[2]}</span><span class="pc-only">${categoryIcon(k,day())}</span></span>${v[0]}${navUnread(k)}</button>`).join('')}</nav>${progressCard(state.tasks,Boolean(state.error))}</aside><div class="work-area"><header class="topbar"><span class="workspace-heading"><span class="mobile-original">AI Teaming</span><span class="pc-only teaming-label">AI Teaming</span></span><div class="topbar-actions">${sourceIndicator()}<a class="shortcut chatgpt-shortcut" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer" aria-label="ChatGPT 새 창으로 열기"><img class="brand-icon chatgpt-icon" src="./images/chatgpt.svg" width="22" height="22" alt=""><span>ChatGPT</span></a><a class="shortcut clova-shortcut" href="${esc(safeURL(state.links.find(l=>!l.removed_at&&l.label==='클로바노트')?.url)||CLOVA_URL)}" target="_blank" rel="noopener noreferrer" aria-label="클로바노트 새 창으로 열기"><img class="brand-icon" src="./images/clovanote.svg" width="24" height="24" alt=""><span>클로바노트</span></a>${report?`<a class="shortcut report-shortcut" href="${esc(safeURL(report.url))}" target="_blank" rel="noopener noreferrer">주간보고 PDF ↗</a>`:''}${desktopThemePicker(pcTheme)}<button id="themeToggle" class="theme-toggle" role="switch" aria-checked="${theme==='dark'}" aria-label="다크모드"><span aria-hidden="true">${theme==='dark'?'☀':'☾'}</span><span class="theme-label">${theme==='dark'?'라이트':'다크'}</span></button><small class="today-label">${dateLabel(day())}</small>${desktopSettingsMenu()}<button class="btn primary mobile-compose" data-compose aria-label="대화로 남기기" title="대화로 남기기">＋</button></div></header><main class="main">${demo?'<div class="notice demo-notice">공개용 업무 체험 화면 · 개인 계정 및 실제 업무 데이터와 연결되지 않습니다.</div>':''}${state.error?`<div class="notice error" role="alert">${esc(state.error)}</div>`:''}${state.updateAvailable?'<div class="notice update-notice">새 화면이 준비되었습니다. <button class="text-btn" id="applyUpdate">새 화면 적용 ↻</button></div>':''}${!navigator.onLine?'<div class="notice offline">오프라인 · 인터넷 연결 후 저장하세요.</div>':''}<div class="title-row"><div class="title-copy"><p class="eyebrow">MY WORK, MY PACE</p><h1>${v[0]}</h1><p class="sub">${v[1]}</p></div>${scenicBanner()}<section id="weatherWidget" class="panel weather-panel" aria-label="지역별 오늘 내일 날씨">${weatherWidget()}</section></div>${boardLayout(isWork)}<footer><span>다한닷 · v${APP_VERSION}</span><span>두레이 즐겨찾기 · 일정 30일</span></footer></main></div></div>`;restoreScenery(scenery);if($('.unified-board'))$('.unified-board').scrollTop=boardScroll;bind();applyAppearance();openMenus.forEach(id=>{const menu=document.getElementById(id);if(menu)menu.open=true;});floatingComposer.show((state.user?.id||'demo')+':'+state.workspace.id);bindSourcePopup(sourceOpen);app.querySelectorAll('[data-scroll-key]').forEach(n=>{n.scrollTop=listScrollPositions.get(n.dataset.scrollKey)||0;});if(searchFocus){$('#globalSearch').focus({preventScroll:true});$('#globalSearch').setSelectionRange(...selection);}
+ restoreEvidenceKeys(app,evidenceOpen);
  boardMotion.refresh(app,(state.user?.id||'demo')+':'+state.workspace.id);
  visualMotion.refresh(app,{scope:(state.user?.id||'demo')+':'+state.workspace.id,view:state.query?'search':state.view,mobilePanel:state.mobilePanel,mobileExpanded:state.mobileExpanded,panels:{main:JSON.stringify([state.query,state.taskFilter,state.view==='calendar'?state.month:null,state.view==='calendar'?state.selected:null,state.view==='calendar'?state.calendarPane:null,state.view==='calendar'?state.calendarScope:null,state.showRemovedLinks]),agenda:state.showHiddenAgenda,files:state.showHiddenFiles,briefing:state.showHiddenBriefing},detail:JSON.stringify([state.query,state.taskFilter,state.view==='calendar'?state.month:null,state.view==='calendar'?state.selected:null,state.view==='calendar'?state.calendarPane:null,state.view==='calendar'?state.calendarScope:null,state.mobilePanel,state.mobileExpanded,state.showRemovedLinks,state.showHiddenAgenda,state.showHiddenFiles,state.showHiddenBriefing])});
 }
@@ -688,13 +693,13 @@ function threadHTML(){return conversationThread(messagesForTarget(state.messages
 function scrollToMessage(id){const body=$('#detail .dialog-body'),message=[...document.querySelectorAll('[data-thread-message]')].find(n=>n.dataset.threadMessage===id);if(body&&message)body.scrollTop+=message.getBoundingClientRect().top-body.getBoundingClientRect().top-12;}
 function refreshConversation({toLatest=false}={}){
  if(!$('#detail').open||!$('#conversationThread'))return;
- const body=$('#detail .dialog-body'),top=body.scrollTop,atBottom=body.scrollHeight-top-body.clientHeight<32;
+ const body=$('#detail .dialog-body'),top=body.scrollTop,atBottom=body.scrollHeight-top-body.clientHeight<32,evidenceOpen=openEvidenceKeys(body);
  $('#conversationContext').innerHTML=contextSummary();$('#conversationThread').innerHTML=threadHTML();bindItemDetailButtons();
- body.scrollTop=toLatest||atBottom?body.scrollHeight:top;
+ restoreEvidenceKeys(body,evidenceOpen);body.scrollTop=toLatest||atBottom?body.scrollHeight:top;
 }
 function renderDetailHistory(){const node=$('#detailHistory');if(!node)return;const top=node.scrollTop;node.innerHTML=historyList(detailHistory)||empty('저장된 변경 이력이 없습니다.');node.scrollTop=top;bindItems(node);}
 function readableItemContent(task,event){
- return task?taskDetailContent(task,''):eventDetailContent(event,'');
+ return task?taskDetailContent(task,'',{messages:state.messages}):eventDetailContent(event,'');
 }
 function bindStoryButtons(root){
  root.querySelectorAll('[data-story-task]').forEach(button=>button.onclick=()=>{
