@@ -35,7 +35,7 @@ import './theme-transition.css';
 import './login-story.css';
 import {bindDialogDismiss} from './dialog-dismiss.js';
 document.querySelectorAll('dialog').forEach(bindDialogDismiss);
-const APP_VERSION='2.17.7';
+const APP_VERSION='2.17.8';
 const demo=new URLSearchParams(location.search).get('demo')==='1';
 let recoveryPending=recoveryFromURL(location.hash);
 const db=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},global:{fetch:connectionFetch(fetch)}});
@@ -590,9 +590,10 @@ function bind(){
  app.querySelectorAll('[data-desktop-theme]').forEach(button=>button.onclick=()=>{
   const next=desktopTheme(button.dataset.desktopTheme).id;
   const close=()=>{closeDesktopMenus();$('#desktopThemeMenu summary').focus({preventScroll:true});};
-  if(next===pcTheme){close();return;}
-  pcTheme=next;try{localStorage.setItem('dahandot-desktop-theme',pcTheme);}catch{}
-  queueUserState('pref:desktop-theme',pcTheme);
+  if(next!==pcTheme){
+   pcTheme=next;try{localStorage.setItem('dahandot-desktop-theme',pcTheme);}catch{}
+   queueUserState('pref:desktop-theme',pcTheme);
+  }
   themeTransition.run(button,applyAppearance,close);
  });
  app.querySelectorAll('.desktop-dropdown').forEach(menu=>menu.addEventListener('toggle',()=>{if(menu.open)app.querySelectorAll('.desktop-dropdown').forEach(other=>{if(other!==menu)other.open=false;});}));

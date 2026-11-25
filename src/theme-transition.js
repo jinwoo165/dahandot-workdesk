@@ -1,6 +1,6 @@
-// Keep theme changes separate from navigation and card entrance animations.
+// Theme feedback stays visible even when both palettes use white cards.
 export const THEME_REVEAL_DURATION=300;
-const FADE_DURATION=180;
+const REVEAL_EASING='cubic-bezier(.2,0,.2,1)';
 
 export function themeCircle(rect,width,height){
  const x=Math.min(width,Math.max(0,rect?rect.left+rect.width/2:width/2));
@@ -15,41 +15,57 @@ export function createThemeTransition({window:win=window}={}){
  function clear(){
   const previous=current;current=null;
   previous?.transition?.skipTransition();
-  previous?.animation?.cancel();
-  if(previous?.timer)win.clearTimeout(previous.timer);
-  root.classList.remove('theme-reveal','theme-fade');
+  previous?.animations.forEach(animation=>animation.cancel());
+  previous?.wash?.remove();
+  root.classList.remove('theme-reveal');
  }
  function finish(id){if(current?.id===id)clear();}
  function settle(){current?.apply();sequence++;clear();}
+ function mountWash(id){
+  if(current?.id!==id)return;
+  const wash=doc.createElement('div');
+  wash.className='theme-reveal-wash';
+  wash.setAttribute('aria-hidden','true');
+  wash.setAttribute('inert','');
+  doc.body.append(wash);current.wash=wash;
+ }
+ function animate(id,circle,native){
+  if(current?.id!==id)return;
+  const target=native?root:current.wash;
+  const reveal=target.animate({clipPath:circle},{
+   duration:THEME_REVEAL_DURATION,easing:REVEAL_EASING,fill:'both',
+   ...(native?{pseudoElement:'::view-transition-new(root)'}:{})
+  });
+  current.animations.push(reveal);
+  // A brief tint makes the circular edge visible on every light palette.
+  const wash=current.wash.animate([
+   {opacity:.16,offset:0},{opacity:.16,offset:.65},{opacity:0,offset:1}
+  ],{duration:THEME_REVEAL_DURATION,easing:'linear',fill:'both'});
+  current.animations.push(wash);
+  if(!native)reveal.finished.then(()=>finish(id),()=>finish(id));
+ }
  function run(trigger,update,prepare=()=>{}){
   const id=++sequence;
   clear();
   // Measure before the palette menu closes; keyboard selection uses the same origin.
   const {x,y,radius}=themeCircle(trigger?.getBoundingClientRect(),win.innerWidth,win.innerHeight);
+  const circle=[`circle(0px at ${x}px ${y}px)`,`circle(${radius}px at ${x}px ${y}px)`];
   prepare();
   let applied=false;
   const apply=()=>{if(id!==sequence||applied)return;applied=true;update();};
-  current={id,apply};
+  current={id,apply,animations:[]};
   if(reduced.matches||doc.visibilityState==='hidden'){apply();finish(id);return;}
   if(typeof doc.startViewTransition!=='function'){
-   root.classList.add('theme-fade');
-   // Establish the transition before applying the new CSS variables.
-   void root.offsetWidth;
-   apply();
-   current.timer=win.setTimeout(()=>finish(id),FADE_DURATION);
+   apply();mountWash(id);
+   try{animate(id,circle,false);}catch{finish(id);}
    return;
   }
   root.classList.add('theme-reveal');
   let transition;
-  try{transition=doc.startViewTransition(apply);current.transition=transition;}
+  try{transition=doc.startViewTransition(()=>{apply();mountWash(id);});current.transition=transition;}
   catch{apply();finish(id);return;}
-  transition.ready.then(()=>{
-   if(current?.id!==id)return;
-   current.animation=root.animate({
-    clipPath:[`circle(0px at ${x}px ${y}px)`,`circle(${radius}px at ${x}px ${y}px)`]
-   },{duration:THEME_REVEAL_DURATION,easing:'cubic-bezier(.2,0,.2,1)',pseudoElement:'::view-transition-new(root)',fill:'both'});
-  }).catch(()=>{transition.skipTransition();});
-  // A skipped/unsupported animation must never prevent the selected theme applying.
+  transition.ready.then(()=>animate(id,circle,true)).catch(()=>{transition.skipTransition();});
+  // Skipping the effect must never drop the selected theme or leave an overlay.
   transition.finished.then(()=>{apply();finish(id);},()=>{apply();finish(id);});
  }
  reduced.addEventListener('change',()=>{if(reduced.matches)settle();});

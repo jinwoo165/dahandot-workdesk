@@ -1,4 +1,4 @@
-/* Only the new colors expand; the underlying layout stays in place. */
+/* The same circle and temporary tint are used for every palette. */
 html.theme-reveal::view-transition,
 html.theme-reveal::view-transition-group(root),
 html.theme-reveal::view-transition-image-pair(root),
@@ -10,13 +10,8 @@ html.theme-reveal::view-transition-new(root){animation:none;mix-blend-mode:norma
 html.theme-reveal::view-transition-old(root){z-index:1}
 html.theme-reveal::view-transition-new(root){z-index:2}
 html.theme-reveal,html.theme-reveal *,html.theme-reveal *::before,html.theme-reveal *::after{transition:none!important}
+.theme-reveal-wash{position:fixed;inset:0;z-index:2147483001;background:var(--green);opacity:.16;pointer-events:none;contain:strict}
 @media(prefers-reduced-motion:no-preference){
  .theme-options button,.theme-toggle{transition:transform 70ms ease-out}
  .theme-options button:active,.theme-toggle:active{transform:scale(.97)}
- html.theme-fade,html.theme-fade *,html.theme-fade *::before,html.theme-fade *::after{
-  transition-property:background-color,color,border-color,fill,stroke,box-shadow!important;
-  transition-duration:180ms!important;
-  transition-timing-function:ease-out!important;
-  transition-delay:0ms!important;
- }
 }
