@@ -28,10 +28,12 @@ import {createBoardMotion} from './board-motion.js';
 import './board-motion.css';
 import {createVisualMotion} from './visual-motion.js';
 import './visual-motion.css';
+import {createThemeTransition} from './theme-transition.js';
+import './theme-transition.css';
 import './login-story.css';
 import {bindDialogDismiss} from './dialog-dismiss.js';
 document.querySelectorAll('dialog').forEach(bindDialogDismiss);
-const APP_VERSION='2.17.5';
+const APP_VERSION='2.17.6';
 const demo=new URLSearchParams(location.search).get('demo')==='1';
 let recoveryPending=recoveryFromURL(location.hash);
 const db=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},global:{fetch:connectionFetch(fetch)}});
@@ -63,6 +65,7 @@ document.addEventListener('click',event=>{if(!event.target.closest('.desktop-dro
 document.addEventListener('keydown',event=>{if(event.key==='Escape'){const menu=document.querySelector('.desktop-dropdown[open]');if(menu){event.preventDefault();closeDesktopMenus();menu.querySelector('summary').focus({preventScroll:true});}}});
 const boardMotion=createBoardMotion();
 const visualMotion=createVisualMotion();
+const themeTransition=createThemeTransition();
 const floatingComposer=createFloatingComposer({onOpen:()=>openConversation({}),icon:categoryIcon('conversation',day())});
 let weatherAttempt=0,searchComposing=false,searchRequest=0;
 let sceneryPaused=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -578,8 +581,15 @@ function bind(){
  if($('#showHiddenBriefing'))$('#showHiddenBriefing').onclick=()=>{state.showHiddenBriefing=!state.showHiddenBriefing;render();};
  if($('#showRemovedLinks'))$('#showRemovedLinks').onclick=()=>{state.showRemovedLinks=!state.showRemovedLinks;render();};
  $('#mobileView').onchange=e=>navigate(e.target.value);app.querySelectorAll('[data-logout]').forEach(n=>n.onclick=()=>{closeDesktopMenus();void logout();});
- $('#themeToggle').onclick=()=>{theme=theme==='dark'?'light':'dark';try{localStorage.setItem('dahandot-theme',theme);}catch{}queueUserState('pref:theme',theme);applyAppearance();};
- app.querySelectorAll('[data-desktop-theme]').forEach(button=>button.onclick=()=>{pcTheme=desktopTheme(button.dataset.desktopTheme).id;try{localStorage.setItem('dahandot-desktop-theme',pcTheme);}catch{}queueUserState('pref:desktop-theme',pcTheme);applyAppearance();closeDesktopMenus();$('#desktopThemeMenu summary').focus({preventScroll:true});});
+ $('#themeToggle').onclick=event=>{theme=theme==='dark'?'light':'dark';try{localStorage.setItem('dahandot-theme',theme);}catch{}queueUserState('pref:theme',theme);themeTransition.run(event.currentTarget,applyAppearance);};
+ app.querySelectorAll('[data-desktop-theme]').forEach(button=>button.onclick=()=>{
+  const next=desktopTheme(button.dataset.desktopTheme).id;
+  const close=()=>{closeDesktopMenus();$('#desktopThemeMenu summary').focus({preventScroll:true});};
+  if(next===pcTheme){close();return;}
+  pcTheme=next;try{localStorage.setItem('dahandot-desktop-theme',pcTheme);}catch{}
+  queueUserState('pref:desktop-theme',pcTheme);
+  themeTransition.run(button,applyAppearance,close);
+ });
  app.querySelectorAll('.desktop-dropdown').forEach(menu=>menu.addEventListener('toggle',()=>{if(menu.open)app.querySelectorAll('.desktop-dropdown').forEach(other=>{if(other!==menu)other.open=false;});}));
  app.querySelectorAll('[data-rail]').forEach(b=>b.onclick=()=>{state.rail=b.dataset.rail;state.mobilePanel=b.dataset.rail;render();});app.querySelectorAll('[data-mobile-panel]').forEach(b=>{if(b.tagName==='BUTTON')b.onclick=()=>{state.mobilePanel=b.dataset.mobilePanel;if(window.matchMedia('(max-width:900px)').matches){state.mobileExpanded=true;render();}else render();};});
  app.querySelectorAll('[data-calendar-scope]').forEach(b=>b.onclick=()=>{state.calendarScope=b.dataset.calendarScope;state.calendarPane='day';render();});
